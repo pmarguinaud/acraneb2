@@ -1,0 +1,4 @@
+work/
+src/*.o
+src/*.mod
+src/main

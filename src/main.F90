@@ -1,0 +1,81 @@
+PROGRAM MAIN
+
+! read command line arguments (nproma, klev, ngpblk)
+
+USE PARKIND1, ONLY : JPIM
+USE WRAPPER_MOD
+
+IMPLICIT NONE
+
+INTEGER :: IARG
+CHARACTER(LEN=256) :: CARG
+INTEGER(KIND=JPIM) :: NPROMA,NLEV,NGPBLK,NCOUNT
+LOGICAL :: LCHECK
+
+! default arguments
+NPROMA=32
+NLEV=87
+NGPBLK=1
+NCOUNT=1
+LCHECK=.FALSE.
+
+! parse arguments
+IARG=1
+DO WHILE ( IARG <= COMMAND_ARGUMENT_COUNT() )
+  CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+	SELECT CASE (TRIM(CARG))
+		CASE ('--nproma')
+			IARG=IARG+1
+			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+			READ(CARG,*) NPROMA
+		CASE ('--nlev')
+			IARG=IARG+1
+			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+			READ(CARG,*) NLEV
+		CASE ('--ncount')
+			IARG=IARG+1
+			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+			READ(CARG,*) NCOUNT
+		CASE ('--ngpblk')
+			IARG=IARG+1
+			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+			READ(CARG,*) NGPBLK
+		CASE ('--check')
+		  LCHECK=.TRUE.
+		CASE ('--help')
+			WRITE (*,*) 'Acraneb2 wrapper'
+			WRITE (*,*)
+			WRITE (*,*) '  acraneb2 is an atmospheric radiation parameterization scheme'
+			WRITE (*,*)
+			WRITE (*,*) '  A scientific description can be found in Geleyn et al., 2017 (doi:10.1002/qj.3006) '
+			WRITE (*,*) '  and Masek et al., 2015 (doi: 10.1002/qj.2653).'
+			WRITE (*,*)
+			WRITE (*,*) '  Data for this wrapper are taken from a 1.3km resolution run with 87 vertical levels '
+			WRITE (*,*) '  with a timestep of 60s, on August 1 2016. Forecast lead time is 12h.'
+			WRITE (*,*) '  Intermittency is switched off.'
+			WRITE (*,*)
+			WRITE (*,*) 'Command line options:'
+			WRITE (*,*) '  --help              show this help'
+			WRITE (*,*) '  --nproma {nproma}   blocking size'
+			WRITE (*,*) '  --nlev   {nlev}     number of vertical levels'
+			WRITE (*,*) '  --ngpblk {ngpblk}   number of blocks'
+			WRITE (*,*) '  --ncount {ncount}   number of repetitions'
+			WRITE (*,*) '  --check             check results'
+			STOP
+		CASE DEFAULT
+		  WRITE (*,*) 'WARNING:  unknown argument ',TRIM(CARG)
+	END SELECT
+	IARG=IARG+1
+ENDDO
+
+WRITE (*,*) 'Running acraneb2 wrapper with'
+WRITE (*,*) '  nproma = ',NPROMA
+WRITE (*,*) '  nlev   = ',NLEV
+WRITE (*,*) '  ngpblk = ',NGPBLK
+WRITE (*,*) '  ncount = ',NCOUNT
+WRITE (*,*) '  lcheck = ',LCHECK
+
+! call wrapper
+CALL WRAPPER(NPROMA,NLEV,NGPBLK,NCOUNT,LCHECK)
+
+END PROGRAM MAIN
