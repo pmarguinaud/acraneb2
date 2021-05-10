@@ -4,7 +4,7 @@
 module load foss/2019b
 
 # compile
-make -C src -f Makefile.gnu
+make -C src -f Makefile.gnu || exit
 
 # environment settings
 export OMP_NUM_THREADS=4

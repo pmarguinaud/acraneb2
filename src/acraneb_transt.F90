@@ -330,22 +330,30 @@ DO JLON=KIDIA,KFDIA
 ENDDO
 
 ! initialize auxiliary quantities u_w, u_s, u_s_rho and u_c
-ZC_UW      (:,:)=ZEPSU
-ZC_US      (:,:)=ZEPSU
-ZC_US_IRHOV(:,:)=ZEPSU
-ZC_UC      (:)  =ZEPSU
-ZC_U       (:,:)=ZEPSU
-ZC_PU      (:,:)=ZEPSU
-ZC_TU      (:,:)=ZEPSU
-ZT_UW      (:,:)=ZEPSU
-ZT_US      (:,:)=ZEPSU
-ZT_US_IRHOV(:,:)=ZEPSU
-ZT_UC      (:)  =ZEPSU
-ZT_U       (:,:)=ZEPSU
-ZT_PU      (:,:)=ZEPSU
-ZT_TU      (:,:)=ZEPSU
+! daand: added explicit loops here
+DO JG=1,3
+	DO JLON=KIDIA,KFDIA
+		ZC_UW      (JLON,JG)=ZEPSU
+		ZC_US      (JLON,JG)=ZEPSU
+		ZC_US_IRHOV(JLON,JG)=ZEPSU
+		ZC_U       (JLON,JG)=ZEPSU
+		ZC_PU      (JLON,JG)=ZEPSU
+		ZC_TU      (JLON,JG)=ZEPSU
+		ZT_UW      (JLON,JG)=ZEPSU
+		ZT_US      (JLON,JG)=ZEPSU
+		ZT_US_IRHOV(JLON,JG)=ZEPSU
+		ZT_U       (JLON,JG)=ZEPSU
+		ZT_PU      (JLON,JG)=ZEPSU
+		ZT_TU      (JLON,JG)=ZEPSU
+	ENDDO
+ENDDO
+DO JLON=KIDIA,KFDIA
+	ZC_UC      (JLON)  =ZEPSU
+	ZT_UC      (JLON)  =ZEPSU
+ENDDO
 
 ! compute total and incremental optical depths
+! daand: a bit worried about PT and ZDEOTA0/ZDEOTA1 being passed as scalars here ...
 CALL DELTA_C(KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZC_UW,ZC_US,ZC_US_IRHOV,ZC_UC,ZC_U,ZC_PU,ZC_TU,&
  & ZDEOTA0(1,KTDIA-1))
@@ -419,21 +427,29 @@ ENDDO
 ! -----
 
 ! thermal depths computed from surface up to given level
-ZEOTO      (:)  =0._JPRB
-ZC_UW      (:,:)=ZEPSU
-ZC_US      (:,:)=ZEPSU
-ZC_US_IRHOV(:,:)=ZEPSU
-ZC_UC      (:)  =ZEPSU
-ZC_U       (:,:)=ZEPSU
-ZC_PU      (:,:)=ZEPSU
-ZC_TU      (:,:)=ZEPSU
-ZT_UW      (:,:)=ZEPSU
-ZT_US      (:,:)=ZEPSU
-ZT_US_IRHOV(:,:)=ZEPSU
-ZT_UC      (:)  =ZEPSU
-ZT_U       (:,:)=ZEPSU
-ZT_PU      (:,:)=ZEPSU
-ZT_TU      (:,:)=ZEPSU
+! daand: added explicit loops here
+DO JG=1,3
+	DO JLON=KIDIA,KFDIA
+		ZC_UW      (JLON,JG)=ZEPSU
+		ZC_US      (JLON,JG)=ZEPSU
+		ZC_US_IRHOV(JLON,JG)=ZEPSU
+		ZC_U       (JLON,JG)=ZEPSU
+		ZC_PU      (JLON,JG)=ZEPSU
+		ZC_TU      (JLON,JG)=ZEPSU
+		ZT_UW      (JLON,JG)=ZEPSU
+		ZT_US      (JLON,JG)=ZEPSU
+		ZT_US_IRHOV(JLON,JG)=ZEPSU
+		ZT_U       (JLON,JG)=ZEPSU
+		ZT_PU      (JLON,JG)=ZEPSU
+		ZT_TU      (JLON,JG)=ZEPSU
+	ENDDO
+ENDDO
+DO JLON=KIDIA,KFDIA
+  ZEOTO      (JLON)  =0._JPRB
+	ZC_UC      (JLON)  =ZEPSU
+	ZT_UC      (JLON)  =ZEPSU
+ENDDO
+
 
 ! -----
 ! ascending vertical loop
@@ -452,6 +468,7 @@ DO JLEV=KLEV,KTDIA,-1
   ENDDO
 
   ! compute total and incremental optical depths
+	! daand: a bit worried about PT and ZUEOTA0/ZUEOTA1 being passed as scalars here ...
   CALL DELTA_C(JLEV,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
    & ZC_UW,ZC_US,ZC_US_IRHOV,ZC_UC,ZC_U,ZC_PU,ZC_TU,&
    & ZUEOTA0(1,JLEV))
@@ -478,6 +495,7 @@ DO JLON=KIDIA,KFDIA
 ENDDO
 
 ! compute total and incremental optical depths
+! daand: a bit worried about PT and ZUEOTA0/ZUEOTA1 being passed as scalars here ...
 CALL DELTA_C(KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZC_UW,ZC_US,ZC_US_IRHOV,ZC_UC,ZC_U,ZC_PU,ZC_TU,&
  & ZUEOTA0(1,KTDIA-1))
@@ -525,20 +543,28 @@ IF ( .NOT.LDAUTO ) THEN
 
   DO JLEV1=KTDIA-1,KLEV-1  ! initial half level
 
-    ZC_UW      (:,:)=ZEPSU
-    ZC_US      (:,:)=ZEPSU
-    ZC_US_IRHOV(:,:)=ZEPSU
-    ZC_UC      (:)  =ZEPSU
-    ZC_U       (:,:)=ZEPSU
-    ZC_PU      (:,:)=ZEPSU
-    ZC_TU      (:,:)=ZEPSU
-    ZT_UW      (:,:)=ZEPSU
-    ZT_US      (:,:)=ZEPSU
-    ZT_US_IRHOV(:,:)=ZEPSU
-    ZT_UC      (:)  =ZEPSU
-    ZT_U       (:,:)=ZEPSU
-    ZT_PU      (:,:)=ZEPSU
-    ZT_TU      (:,:)=ZEPSU
+		! daand: added explicit loops here
+		DO JG=1,3
+			DO JLON=KIDIA,KFDIA
+				ZC_UW      (JLON,JG)=ZEPSU
+				ZC_US      (JLON,JG)=ZEPSU
+				ZC_US_IRHOV(JLON,JG)=ZEPSU
+				ZC_U       (JLON,JG)=ZEPSU
+				ZC_PU      (JLON,JG)=ZEPSU
+				ZC_TU      (JLON,JG)=ZEPSU
+				ZT_UW      (JLON,JG)=ZEPSU
+				ZT_US      (JLON,JG)=ZEPSU
+				ZT_US_IRHOV(JLON,JG)=ZEPSU
+				ZT_U       (JLON,JG)=ZEPSU
+				ZT_PU      (JLON,JG)=ZEPSU
+				ZT_TU      (JLON,JG)=ZEPSU
+			ENDDO
+		ENDDO
+		DO JLON=KIDIA,KFDIA
+			ZC_UC      (JLON)  =ZEPSU
+			ZT_UC      (JLON)  =ZEPSU
+		ENDDO
+
 
     IF ( LRPROX ) THEN
       ILEV=MIN(JLEV1+2,KLEV)
@@ -593,20 +619,27 @@ IF ( .NOT.LDAUTO ) THEN
   ! top to surface gaseous transmissions
   ! -----
  
-  ZC_UW      (:,:)=ZEPSU
-  ZC_US      (:,:)=ZEPSU
-  ZC_US_IRHOV(:,:)=ZEPSU
-  ZC_UC      (:)  =ZEPSU
-  ZC_U       (:,:)=ZEPSU
-  ZC_PU      (:,:)=ZEPSU
-  ZC_TU      (:,:)=ZEPSU
-  ZT_UW      (:,:)=ZEPSU
-  ZT_US      (:,:)=ZEPSU
-  ZT_US_IRHOV(:,:)=ZEPSU
-  ZT_UC      (:)  =ZEPSU
-  ZT_U       (:,:)=ZEPSU
-  ZT_PU      (:,:)=ZEPSU
-  ZT_TU      (:,:)=ZEPSU
+	! daand: added explicit loops here
+	DO JG=1,3
+		DO JLON=KIDIA,KFDIA
+			ZC_UW      (JLON,JG)=ZEPSU
+			ZC_US      (JLON,JG)=ZEPSU
+			ZC_US_IRHOV(JLON,JG)=ZEPSU
+			ZC_U       (JLON,JG)=ZEPSU
+			ZC_PU      (JLON,JG)=ZEPSU
+			ZC_TU      (JLON,JG)=ZEPSU
+			ZT_UW      (JLON,JG)=ZEPSU
+			ZT_US      (JLON,JG)=ZEPSU
+			ZT_US_IRHOV(JLON,JG)=ZEPSU
+			ZT_U       (JLON,JG)=ZEPSU
+			ZT_PU      (JLON,JG)=ZEPSU
+			ZT_TU      (JLON,JG)=ZEPSU
+		ENDDO
+	ENDDO
+	DO JLON=KIDIA,KFDIA
+		ZC_UC      (JLON)  =ZEPSU
+		ZT_UC      (JLON)  =ZEPSU
+	ENDDO
 
   DO JLEV=KTDIA,KLEV
 
@@ -646,20 +679,27 @@ ELSE
 
   DO JLEV1=KTDIA-1,KLEV    ! initial half level
 
-    ZC_UW      (:,:)=ZEPSU
-    ZC_US      (:,:)=ZEPSU
-    ZC_US_IRHOV(:,:)=ZEPSU
-    ZC_UC      (:)  =ZEPSU
-    ZC_U       (:,:)=ZEPSU
-    ZC_PU      (:,:)=ZEPSU
-    ZC_TU      (:,:)=ZEPSU
-    ZT_UW      (:,:)=ZEPSU
-    ZT_US      (:,:)=ZEPSU
-    ZT_US_IRHOV(:,:)=ZEPSU
-    ZT_UC      (:)  =ZEPSU
-    ZT_U       (:,:)=ZEPSU
-    ZT_PU      (:,:)=ZEPSU
-    ZT_TU      (:,:)=ZEPSU
+		! daand: added explicit loops here
+		DO JG=1,3
+			DO JLON=KIDIA,KFDIA
+				ZC_UW      (JLON,JG)=ZEPSU
+				ZC_US      (JLON,JG)=ZEPSU
+				ZC_US_IRHOV(JLON,JG)=ZEPSU
+				ZC_U       (JLON,JG)=ZEPSU
+				ZC_PU      (JLON,JG)=ZEPSU
+				ZC_TU      (JLON,JG)=ZEPSU
+				ZT_UW      (JLON,JG)=ZEPSU
+				ZT_US      (JLON,JG)=ZEPSU
+				ZT_US_IRHOV(JLON,JG)=ZEPSU
+				ZT_U       (JLON,JG)=ZEPSU
+				ZT_PU      (JLON,JG)=ZEPSU
+				ZT_TU      (JLON,JG)=ZEPSU
+			ENDDO
+		ENDDO
+		DO JLON=KIDIA,KFDIA
+			ZC_UC      (JLON)  =ZEPSU
+			ZT_UC      (JLON)  =ZEPSU
+		ENDDO
 
     DO JLON=KIDIA,KFDIA
       ZTAU0(JLON,JLEV1,JLEV1)=1._JPRB
@@ -750,7 +790,12 @@ IF ( LRPROX ) THEN
   ENDDO
 
   ! compute correction factor for tau12 /= tau1.tau2
-  PRPROX(:,:)=0._JPRB
+  ! daand: added explicit loops here
+	DO JLEV=0,KLEV
+	  DO JLON=KIDIA,KFDIA
+	    PRPROX(JLON,JLEV)=0._JPRB
+		ENDDO
+	ENDDO
   DO JLEV=KTDIA,KLEV-1
     DO JLON=KIDIA,KFDIA
       ZTT=PT(JLON,JLEV)/PT(JLON,JLEV+1)
@@ -782,7 +827,11 @@ ENDIF
 ! -----
 
 ! add T_e corrected optical depths
-PRSURF(:)=0._JPRB
+! daand: added explicit loops here
+DO JLON=KIDIA,KFDIA
+	PRSURF(JLON)=0._JPRB
+ENDDO
+
 DO JLEV=KTDIA,KLEV
   DO JLON=KIDIA,KFDIA
     PRSURF(JLON)=PRSURF(JLON)+PDEOTI2(JLON,JLEV)

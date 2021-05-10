@@ -377,12 +377,17 @@ DO JLEV=KTDIA,KLEV
 ENDDO
 
 ! ALPHA1, ALPHA2 FOR AEROSOLS.
-ZEO2TA=0._JPRB
-ZEO2SA=0._JPRB
-ZEO1TA=0._JPRB
-ZEO1SA=0._JPRB
-ZEOSA=0._JPRB
-ZEOSADIR=0._JPRB
+! daand: add loops
+DO JLEV=KTDIA,KLEV
+  DO JLON=KIDIA,KFDIA
+		ZEO2TA(JLON,JLEV)=0._JPRB
+		ZEO2SA(JLON,JLEV)=0._JPRB
+		ZEO1TA(JLON,JLEV)=0._JPRB
+		ZEO1SA(JLON,JLEV)=0._JPRB
+		ZEOSA(JLON,JLEV)=0._JPRB
+		ZEOSADIR(JLON,JLEV)=0._JPRB
+	ENDDO
+ENDDO
 DO JAE=1,6
   ZUNSCALE=4._JPRB*USAA(JAE)/(3._JPRB+4._JPRB*USAA(JAE))  ! -g
   ZUNSCALE=1._JPRB/(1._JPRB-ZUNSCALE*ZUNSCALE)            ! 1/(1 - g^2)
@@ -494,7 +499,8 @@ ENDDO
 
 ! compute day/night limits
 IF (.NOT.LRAYPL.OR.(NPHYREP /= 0 .AND. NPHYREP /= -4)) THEN
-
+  ! daand: in my config, NPHYREP=1, so this case is always selected!
+	
   ! PAS DE CALCUL DE "PLAGES" SOLAIRES.
   ! NO "DAYLIGHT" INTERVALS COMPUTATION.
   IAUCR=1
@@ -502,6 +508,8 @@ IF (.NOT.LRAYPL.OR.(NPHYREP /= 0 .AND. NPHYREP /= -4)) THEN
   IFDIA(1)=KFDIA
 
 ELSE
+
+#ifdef gnarls
 
   IF ( ICALS == 0 ) THEN
     DO JLON=KIDIA,KFDIA
@@ -546,7 +554,7 @@ ELSE
   IF (LLFDIA) THEN
     IFDIA(IAUCR)=KFDIA
   ENDIF
-
+#endif
 ENDIF
 
 !     III - CALCUL DES EPAISSEURS OPTIQUES GASEUSES. LES CALCULS
@@ -959,7 +967,12 @@ IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
   ! EBL flux for 'grey' minimum optical depths
   ! (zfluxd positive downwards, D - distant)
-  ZFLUXD(:,:)=0._JPRB
+  ! daand: add explicit loops
+	DO JLEV=0,KLEV
+	  DO JLON=KIDIA,KFDIA
+		  ZFLUXD(JLON,JLEV)=0._JPRB
+		ENDDO
+	ENDDO
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers
@@ -994,7 +1007,12 @@ IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
  
   ! EBL flux for 'grey' maximum optical depths
   ! (ZFLUXL positive downwards, L - local)
-  ZFLUXL(:,:)=0._JPRB
+  ! daand: add explicit loops
+	DO JLEV=0,KLEV
+	  DO JLON=KIDIA,KFDIA
+		  ZFLUXL(JLON,JLEV)=0._JPRB
+		ENDDO
+	ENDDO
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers
@@ -1038,7 +1056,12 @@ ELSEIF ( ICALT == 2 ) THEN
 
   ! true EBL flux
   ! (ZFLUXR positive downwards, R - real)
-  ZFLUXR(:,:)=0._JPRB
+  ! daand: add explicit loops
+	DO JLEV=0,KLEV
+	  DO JLON=KIDIA,KFDIA
+		  ZFLUXR(JLON,JLEV)=0._JPRB
+		ENDDO
+	ENDDO
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers

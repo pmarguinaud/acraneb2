@@ -238,7 +238,12 @@ ENDDO
 
 ! initialize pressure/temperature factors for H2O e-type continuum
 IF ( FGTS_C(1) == 0._JPRB ) THEN
-  ZS_FC(:,:)=0._JPRB
+  ! daand: added explicit loops
+  DO JLEV=KTDIA-1,KLEV
+	  DO JLON=KIDIA,KFDIA
+		  ZS_FC(JLON,JLEV)=0._JPRB
+		ENDDO
+	ENDDO
 ELSE
   DO JN=1,KAUCR
     DO JLON=KIIDIA(JN),KIFDIA(JN)
@@ -284,16 +289,24 @@ DO JLON=KIDIA,KFDIA
 ENDDO
 
 ! initialize auxiliary quantities u_w, u_s, u_s_rho and u_c
-ZS_UW      (:,:)=ZEPSU
-ZS_US      (:,:)=ZEPSU
-ZS_US_IRHOV(:,:)=ZEPSU
-ZS_UC      (:)  =ZEPSU
-ZS_U       (:,:)=ZEPSU
-ZS_PU      (:,:)=ZEPSU
-ZS_TU      (:,:)=ZEPSU
+! daand: added explicit loops
+DO JN=1,3
+	DO JLON=KIDIA,KFDIA
+		ZS_UW      (JLON,JN)=ZEPSU
+		ZS_US      (JLON,JN)=ZEPSU
+		ZS_US_IRHOV(JLON,JN)=ZEPSU
+		ZS_U       (JLON,JN)=ZEPSU
+		ZS_PU      (JLON,JN)=ZEPSU
+		ZS_TU      (JLON,JN)=ZEPSU
+	ENDDO
+ENDDO
+DO JLON=KIDIA,KFDIA
+  ZS_UC      (JLON)  =ZEPSU
+ENDDO
 
 ! compute total and incremental optical depths
 ! (solar incremental multiplied by 2.mu0)
+! daand: a bit worried about PT and ZDEOSA being passed as scalars here ...
 CALL DELTA_S(KTDIA-1,LL_DESC,ZP,PT(1,KTDIA),ZDU,&
  & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
  & ZDEOSA(1,KTDIA-1))
@@ -373,6 +386,7 @@ DO JLEV=KLEV,KTDIA,-1
   ENDDO
 
   ! compute total and incremental optical depths
+	! daand: a bit worried about PT and ZUEOSA being passed as scalars here ...
   CALL DELTA_S(JLEV,LL_DESC,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
    & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
    & ZUEOSA(1,JLEV))

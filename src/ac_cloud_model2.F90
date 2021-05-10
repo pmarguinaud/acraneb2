@@ -251,8 +251,13 @@ ELSE
   ZDI2L=LOG(FCM_DEL_DI/FCM_DEL_DL)
 
   ! logical keys for skipping points without cloud liquid/ice
-  LLQI(:,:)=PQI(:,:) > 0._JPRB
-  LLQL(:,:)=PQL(:,:) > 0._JPRB
+  ! daand: add explicit loops
+	DO JLEV=1,KLEV
+	  DO JLON=KIDIA,KFDIA
+			LLQI(JLON,JLEV)=PQI(JLON,JLEV) > 0._JPRB
+			LLQL(JLON,JLEV)=PQL(JLON,JLEV) > 0._JPRB
+		ENDDO
+	ENDDO
 
   ! 1.2.1 Convert IWC/LWC to D_e/R_e
   ! --------------------------------
@@ -299,13 +304,20 @@ ELSE
   ! ------------------------------------------
 
   ! initialize arrays for the case of no clouds
-  ZEOAI(:,:,:)=0._JPRB
-  ZEOAL(:,:,:)=0._JPRB
-  ZEODI(:,:,:)=0._JPRB
-  ZEODL(:,:,:)=0._JPRB
-  ZGI  (:,:,:)=0._JPRB
-  ZGL  (:,:,:)=0._JPRB
-
+  ! daand: add explicit loops
+  DO JB=1,N_SPBAND
+		DO JLEV=1,KLEV
+			DO JLON=KIDIA,KFDIA
+				ZEOAI(JLON,JLEV,JB)=0._JPRB
+				ZEOAL(JLON,JLEV,JB)=0._JPRB
+				ZEODI(JLON,JLEV,JB)=0._JPRB
+				ZEODL(JLON,JLEV,JB)=0._JPRB
+				ZGI  (JLON,JLEV,JB)=0._JPRB
+				ZGL  (JLON,JLEV,JB)=0._JPRB
+			ENDDO
+		ENDDO
+	ENDDO
+	
   ! loop through spectral bands
   DO JB=1,N_SPBAND
 
