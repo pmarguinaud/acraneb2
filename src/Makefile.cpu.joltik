@@ -1,0 +1,32 @@
+# makefile for acraneb2 test programs
+
+# on joltik
+# 	module swap cluster/joltik
+# 	module load NVHPC/20.9
+#
+
+FC=nvfortran
+
+# for gpu
+# FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -acc -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -DUSE_ACC -DUSE_DATAREGION -Mcuda
+
+# for gpu debugging
+#FCOPTS=-mp -byteswapio -Mlarge_arrays -Minfo=accel,all,intensity,ccff -acc -gpu=autocompare,zeroinit -O0 -gopt -DUSE_ACC -DUSE_DATAREGION -Mcuda
+
+# for cpu
+FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -O3
+
+# for debugging on cpu
+#FCOPTS=-byteswapio -O0 -g -traceback -C
+
+all: main
+
+main: main.o ac_cloud_model2.o acraneb_coefs.o acraneb_coeft.o acraneb_solvs.o acraneb_solvt3.o acraneb_solvt.o \
+    acraneb_transs.o acraneb_transt.o acraneb2.o
+	$(FC) -o main $(FCOPTS) *.o
+
+# dependencies generated with finddeps.sh
+include Makefile_deps.mk
+
+clean:
+	rm main *.o *.mod

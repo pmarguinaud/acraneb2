@@ -3,6 +3,8 @@
 # find dependencies (modules), generating makefile rules
 # probably not failsafe at all, but it does the trick for now
 
+echo "# to generate this file, run ../util/finddeps.sh > Makefile_deps.mk in the src/ directory"
+
 for ff in $(ls *.F90); do
 	# find modules used in this source file
 	mods=$(grep -oi "^\s*use\s*[a-z0-9_]*" ${ff} | awk -F' ' '{print $2}')
