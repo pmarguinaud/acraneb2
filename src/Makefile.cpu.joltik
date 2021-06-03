@@ -14,7 +14,7 @@ FC=nvfortran
 #FCOPTS=-mp -byteswapio -Mlarge_arrays -Minfo=accel,all,intensity,ccff -acc -gpu=autocompare,zeroinit -O0 -gopt -DUSE_ACC -DUSE_DATAREGION -Mcuda
 
 # for cpu
-FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -O3
+FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -O3 -DUSE_STACK
 
 # for debugging on cpu
 #FCOPTS=-byteswapio -O0 -g -traceback -C
