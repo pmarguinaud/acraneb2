@@ -1,5 +1,7 @@
 MODULE WRAPPER_MOD
 
+#include "pmstack.h"
+
 CONTAINS
 
 SUBROUTINE WRAPPER(KLON,KLEV,KGPBLK,KCOUNT,LCHECK)
@@ -109,7 +111,21 @@ ts=omp_get_wtime()
 
 DO JCOUNT=1,KCOUNT
 
-	!$OMP PARALLEL DO PRIVATE(JBLK,JLON,KIDIA,KFDIA)
+#ifdef USE_DATAREGION
+  !$acc data &
+	!$acc&   copyin( YDERDI,YDRIP,YDML_PHY_MF, &
+  !$acc&     PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
+  !$acc&     PALB,PALBDIR,PEMIS,PGELAM,PGEMU,PMU0,PMU0LU,PTS,PDECRD,PCLCT, &
+  !$acc&     PDAER) &
+	!$acc&   create(PSTACK) &
+  !$acc&   copy(PGDEOSI,PGUEOSI,PGMU0,PGMU0_MIN,PGMU0_MAX, &
+  !$acc&     PGDEOTI,PGDEOTI2,PGUEOTI,PGUEOTI2,PGEOLT,PGEOXT, &
+  !$acc&     PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR) &
+  !$acc&   copyout(PFRSO,PFRTH, &
+  !$acc&     PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
+#endif
+
+	!$acc parallel loop gang vector private(JBLK,JLON,KIDIA,KFDIA) collapse (2)
 	DO JBLK=1,KGPBLK
 
 	  DO JLON=1,KLON
@@ -139,7 +155,11 @@ DO JCOUNT=1,KCOUNT
 		ENDDO
 		
 	ENDDO
-	!$OMP END PARALLEL DO
+  !$acc end parallel loop
+
+#ifdef USE_DATAREGION
+  !$acc end data
+#endif
 
 ENDDO
 

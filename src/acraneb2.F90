@@ -534,7 +534,7 @@ alloc(ZEOTI)
 alloc(LLMASKS)
 
 !-------------------------------------------------------------------------------
-IF (LHOOK) CALL DR_HOOK('ACRANEB2',0,ZHOOK_HANDLE)
+!IF (LHOOK) CALL DR_HOOK('ACRANEB2',0,ZHOOK_HANDLE)
 
 ASSOCIATE(TSPHY=>YDML_PHY_MF%YRPHY2%TSPHY, &
  & EOATA=>YDML_PHY_MF%YRPHY3%EOATA, USAA=>YDML_PHY_MF%YRPHY3%USAA, EODTA=>YDML_PHY_MF%YRPHY3%EODTA, &
@@ -2466,5 +2466,5 @@ ENDIF
 
 !-------------------------------------------------------------------------------
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB2',1,ZHOOK_HANDLE)
+!IF (LHOOK) CALL DR_HOOK('ACRANEB2',1,ZHOOK_HANDLE)
 END SUBROUTINE ACRANEB2

@@ -143,7 +143,7 @@ alloc(ZTU9)
 
 !-----------------------------------------------------------------------
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT',0,ZHOOK_HANDLE)
+!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT',0,ZHOOK_HANDLE)
 ASSOCIATE(LRNUMX=>YDPHY%LRNUMX)
 !-----------------------------------------------------------------------
 
@@ -359,5 +359,5 @@ DO JLEV=KLEV,KTDIA,-1
 ENDDO
 
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT',1,ZHOOK_HANDLE)
+!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT',1,ZHOOK_HANDLE)
 END SUBROUTINE ACRANEB_SOLVT

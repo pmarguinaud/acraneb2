@@ -1,1 +1,1 @@
-Makefile.cpu.joltik
+Makefile.gpu.joltik
