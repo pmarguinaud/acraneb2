@@ -20,11 +20,11 @@
 #define CAT(a,b) PASTE(a)b
 #define temp(t, n, s) t, DIMENSION s :: n; POINTER (CAT(CAT(IP_,n),_), n)
 #define init_stack() INTEGER(KIND=8) :: ISTACKPTR; ISTACKPTR = KSTACKPTR
-#define alloc(n) CAT(CAT(IP_,n),_) = LOC (PSTACK (ISTACKPTR)); ISTACKPTR = ISTACKPTR + SIZE (n); IF (ISTACKPTR > KSTACKSIZE) THEN; WRITE (0,*) "Stack depleted! at",__FILE__,__LINE__; CALL ABORT(); ENDIF
+#define alloc(n) CAT(CAT(IP_,n),_) = LOC (PSTACK (ISTACKPTR)); ISTACKPTR = ISTACKPTR + SIZE (n); IF (ISTACKPTR > KSTACKSIZE) STOP CAT("Stack depleted at ",n)
 #else
 #define temp(t, n, s) t, DIMENSION s :: n; POINTER (IP_##n##_, n)
 #define init_stack() INTEGER(KIND=8) :: ISTACKPTR; ISTACKPTR = KSTACKPTR
-#define alloc(n) IP_##n##_ = LOC (PSTACK (ISTACKPTR)); ISTACKPTR = ISTACKPTR + SIZE (n); IF (ISTACKPTR > KSTACKSIZE) THEN; WRITE (0,*) "Stack depleted! at",__FILE__,__LINE__; CALL ABORT(); ENDIF
+#define alloc(n) IP_##n##_ = LOC (PSTACK (ISTACKPTR)); ISTACKPTR = ISTACKPTR + SIZE (n); IF (ISTACKPTR > KSTACKSIZE) STOP "Stack depleted at "//#n
 #endif
 
 #else
