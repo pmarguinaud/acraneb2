@@ -164,7 +164,8 @@ DO JCOUNT=1,KCOUNT
 ENDDO
 
 te=omp_get_wtime()
-write (*,*) 'elapsed time : ',te-ts,'s'
+write (*,'(A,F8.2,A)') 'elapsed time : ',te-ts,' s'
+write (*,'(A,F8.4,A)') '          i.e. ',1000.*(te-ts)/(KLON*KGPBLK)/KCOUNT,' ms/gp'
 
 ! check output
 IF ( LCHECK ) THEN

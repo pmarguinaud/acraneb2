@@ -8,8 +8,7 @@
 FC=nvfortran
 
 # for gpu
-#FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Minline=reshape,delta_s,delta_t,delta_c,fit1,smallsize:99999 -DUSE_ACC -DUSE_DATAREGION -Mcuda
-FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -DUSE_ACC -Minline=reshape,delta_s,delta_t,delta_c,fit1,smallsize:99999 -Mcuda
+FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Minline=reshape,delta_s,delta_t,delta_c,fit1,smallsize:99999 -Mcuda -DUSE_ACC -DUSE_STACK -DUSE_DATAREGION
 
 # for gpu debugging
 #FCOPTS=-mp -byteswapio -Mlarge_arrays -Minfo=accel,all,intensity,ccff -acc -gpu=autocompare,zeroinit -O0 -gopt -DUSE_ACC -DUSE_DATAREGION -Mcuda
