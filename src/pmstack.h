@@ -1,7 +1,6 @@
 ! header file to implement Philippe Marguinauds ingenious stack mechanism
 
 #ifdef USE_ACC
-!$acc routine(ACRANEB2) seq
 !$acc routine(ACRANEB_TRANST) seq
 !$acc routine(ACRANEB_TRANSS) seq
 !$acc routine(ACRANEB_COEFT) seq
