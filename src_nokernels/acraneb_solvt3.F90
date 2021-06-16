@@ -160,10 +160,7 @@ ASSOCIATE(LRNUMX=>YDPHY%LRNUMX)
 ! I.1 - FIRST LAYER, ELIMINATION (EASY).
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   IF (LRNUMX) THEN
     ZAL1(JLON)=PB2(JLON,KTDIA)
     ZAL2(JLON)=PB1(JLON,KTDIA)
@@ -179,14 +176,9 @@ do jlon=kidia,kfdia
     PA5C(JLON,KTDIA)=PA5C(JLON,KTDIA)*PB1(JLON,KTDIA)&
      & +PA5N(JLON,KTDIA)*PNEB(JLON,KTDIA)
   ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 
   IF (LRNUMX) THEN
     PF1MC(JLON,KTDIA-1)=PA5C(JLON,KTDIA)*(ZAL2(JLON)&
@@ -239,19 +231,14 @@ do jlon=kidia,kfdia
     ZTU6(JLON,KTDIA)=PA5C(JLON,KTDIA)
   ENDIF ! LRNUMX
 
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! I.2 - LOOP OVER THE LAYERS, PRELIMINARY COMPUTATIONS AND THEN ELIMINATION.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA+1,KLEV
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     IF (LRNUMX) THEN
       ZAL1(JLON)=PB2(JLON,JLEV)
       ZAL2(JLON)=PB1(JLON,JLEV)
@@ -267,9 +254,9 @@ DO JLEV=KTDIA+1,KLEV
       PA5C(JLON,JLEV)=PA5C(JLON,JLEV)*PB1(JLON,JLEV)&
        & +PA5N(JLON,JLEV)*PNEB(JLON,JLEV)
     ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 
     IF (LRNUMX) THEN
       ZTD1=1._JPRB/(1._JPRB-PA5C(JLON,JLEV)*(ZAL2(JLON)&
@@ -358,10 +345,8 @@ DO JLEV=KTDIA+1,KLEV
       ZTU6(JLON,JLEV)=PA5C(JLON,JLEV)+ZTD4*ZTU2(JLON,JLEV)
     ENDIF ! LRNUMX
 
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 ! I.3 - SURFACE TREATMENT, ELIMINATION AND BACK-SUBSTITUTION.
 !-------------------------------------------------------------------------------
@@ -369,10 +354,7 @@ enddo
 ! TODO: INCLUDE EMISIVITY IN ZAC(N)3 & ZAC(N)5 ARRAYS, THIS REQUIRES TO 
 !       INCREASE DIMENSION OF ZAC(N) TO 0:KLEV
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 
   ZAL=1._JPRB-PEMIS(JLON)
 
@@ -400,19 +382,14 @@ do jlon=kidia,kfdia
     PF3MC(JLON,KLEV)=ZTDS1*(ZAL*PF3DC(JLON,KLEV)+PF3MC(JLON,KLEV))
   ENDIF
 
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! I.4 - BACK-SUBSTITUTION LAYER BY LAYER.
 !-------------------------------------------------------------------------------
 
 !cdir unroll=8
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KLEV,KTDIA,-1
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 
     IF (LRNUMX) THEN
       PF1DN(JLON,JLEV)=PF1DN(JLON,JLEV)+ZTU8(JLON,JLEV)&
@@ -457,10 +434,8 @@ DO JLEV=KLEV,KTDIA,-1
        & *PF3MC(JLON,JLEV)
     ENDIF ! LRNUMX
 
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 !$acc end data
 

@@ -173,11 +173,8 @@ ZARGLI=-250._JPRB
 ZTRLI =EXP(ZARGLI)
 ZEPS3 =1.E-12_JPRB
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZEORAY=FRS_K_SCAT0*(1._JPRB+PMU0I(JLON)*PAPRSF(JLON,JLEV)/&
        &     FRS_P_CRIT)**(FRS_BETA-1._JPRB)
@@ -241,10 +238,8 @@ DO JLEV=KTDIA,KLEV
       PA3N(JLON,JLEV)=ZG1*(1._JPRB-PA4N(JLON,JLEV)&
        & *PA1N(JLON,JLEV))-ZG2*PA5N(JLON,JLEV)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 !$acc end data
 

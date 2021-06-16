@@ -213,11 +213,8 @@ IF ( .NOT.LCLSATUR ) THEN
   ! into account.
 
   ! fill arrays with namelist values
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
 
       ! absorption coefficient
       PEOASI(JLON,JLEV)=EOASI
@@ -243,10 +240,8 @@ do jlon=kidia,kfdia
       PUSBI (JLON,JLEV)=USBI
       PUSBL (JLON,JLEV)=USBN
 
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
@@ -264,42 +259,29 @@ ELSE
 
   ! logical keys for skipping points without cloud liquid/ice
   ! daand: add explicit loops
-!$acc kernels
-do jlon=kidia,kfdia
-
 	DO JLEV=1,KLEV
-! removed hloop : 	  DO JLON=KIDIA,KFDIA
+	  DO JLON=KIDIA,KFDIA
 			LLQI(JLON,JLEV)=PQI(JLON,JLEV) > 0._JPRB
 			LLQL(JLON,JLEV)=PQL(JLON,JLEV) > 0._JPRB
-! removed hloop : 		ENDDO
+		ENDDO
 	ENDDO
-enddo
-!$acc end kernels
 
   ! 1.2.1 Convert IWC/LWC to D_e/R_e
   ! --------------------------------
 
   ! determine IWC/LWC [g/m^3]
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZRHO=PAPRSF(JLON,JLEV)/(PR(JLON,JLEV)*PT(JLON,JLEV))
       ZIWC(JLON,JLEV)=ZRHO*PQI(JLON,JLEV)*1000._JPRB
       ZLWC(JLON,JLEV)=ZRHO*PQL(JLON,JLEV)*1000._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
   ! determine D_e/R_e [micron] and scale it for fitting
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JB=1,N_SPBAND
     DO JLEV=KTDIA,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
 
         ! effective dimension D_e of ice particles [micron]
         IF ( LLQI(JLON,JLEV) ) THEN
@@ -321,34 +303,27 @@ do jlon=kidia,kfdia
           ZRE1(JLON,JLEV,JB)=0._JPRB
         ENDIF
 
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
   ! 1.2.2 Unsaturated cloud optical properties
   ! ------------------------------------------
 
   ! initialize arrays for the case of no clouds
   ! daand: add explicit loops
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JB=1,N_SPBAND
 		DO JLEV=1,KLEV
-! removed hloop : 			DO JLON=KIDIA,KFDIA
+			DO JLON=KIDIA,KFDIA
 				ZEOAI(JLON,JLEV,JB)=0._JPRB
 				ZEOAL(JLON,JLEV,JB)=0._JPRB
 				ZEODI(JLON,JLEV,JB)=0._JPRB
 				ZEODL(JLON,JLEV,JB)=0._JPRB
 				ZGI  (JLON,JLEV,JB)=0._JPRB
 				ZGL  (JLON,JLEV,JB)=0._JPRB
-! removed hloop : 			ENDDO
+			ENDDO
 		ENDDO
 	ENDDO
-enddo
-!$acc end kernels
 	
   ! loop through spectral bands
 !$thor start ignore
@@ -357,23 +332,13 @@ enddo
 
     ! differentiate between solar/thermal bounds
     IF ( JB == 1 ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 		  DO JLON=KIDIA,KFDIA
+		  DO JLON=KIDIA,KFDIA
 			  LLMASKS(JLON)=LDMASKS(JLON)
-! removed hloop : 			ENDDO
-enddo
-!$acc end kernels
+			ENDDO
     ELSE
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 		  DO JLON=KIDIA,KFDIA
+		  DO JLON=KIDIA,KFDIA
 			  LLMASKS(JLON)=.TRUE.
-! removed hloop : 			ENDDO
-enddo
-!$acc end kernels
+			ENDDO
     ENDIF
 
     ! Pade approximants for scaled k_abs, k_scat and g
@@ -384,11 +349,8 @@ enddo
     CALL FIT1(ZDE1(1,1,JB),FCM_P_GI(JB,:),FCM_Q_GI(JB,:),ZGI  (1,1,JB))
     CALL FIT1(ZRE1(1,1,JB),FCM_P_GL(JB,:),FCM_Q_GL(JB,:),ZGL  (1,1,JB))
 
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         !IF ( LLMASKS(JLON) ) THEN
 
           ! unscale k_abs, k_scat, convert units to [1/Pa],
@@ -412,10 +374,8 @@ do jlon=kidia,kfdia
            & PQL(JLON,JLEV)*(ZEOAL(JLON,JLEV,JB)+ZEODL(JLON,JLEV,JB)))
 
         !ENDIF
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
-enddo
-!$acc end kernels
 
   ! end of loop through spectral bands
 !$thor start ignore
@@ -429,23 +389,20 @@ enddo
   JB=1
 
   ! loop through levels
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
 
     ! initialize effective cloud optical depth with local one
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         ZDEL0_EFFA(JLON,JLEV)=ZDEL0(JLON,JLEV,JB)
         ZDEL0_EFFD(JLON,JLEV)=ZDEL0(JLON,JLEV,JB)
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
 
     ! sum effective cloud optical depth: 1, ..., JLEV-1
 !cdir outerunroll=8
     DO JLEV2=KTDIA,JLEV-1
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         !IF ( LLMASKS(JLON) ) THEN
           ZB=(FCM_B_AI*ZIWC(JLON,JLEV)+FCM_B_AL*ZLWC(JLON,JLEV))/&
            & (ZIWC(JLON,JLEV)+ZLWC(JLON,JLEV)+ZTRLI)
@@ -454,13 +411,13 @@ do jlon=kidia,kfdia
           ZDEL0_EFFD(JLON,JLEV)=ZDEL0_EFFD(JLON,JLEV)+&
            & PNEB(JLON,JLEV2)*ZDEL0(JLON,JLEV2,JB)
         !ENDIF
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
 
     ! sum effective cloud optical depth: JLEV+1, ..., KLEV
 !cdir outerunroll=8
     DO JLEV2=JLEV+1,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         !IF ( LLMASKS(JLON) ) THEN
           ZB=(FCM_B_BI*ZIWC(JLON,JLEV)+FCM_B_BL*ZLWC(JLON,JLEV))/&
            & (ZIWC(JLON,JLEV)+ZLWC(JLON,JLEV)+ZTRLI)
@@ -469,11 +426,11 @@ do jlon=kidia,kfdia
           ZDEL0_EFFD(JLON,JLEV)=ZDEL0_EFFD(JLON,JLEV)+&
            & PNEB(JLON,JLEV2)*ZDEL0(JLON,JLEV2,JB)
         !ENDIF
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
 
     ! saturation of k_abs
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
 
         ! saturation factors
@@ -490,12 +447,12 @@ do jlon=kidia,kfdia
         ZEOAL(JLON,JLEV,JB)=ZCL*ZEOAL(JLON,JLEV,JB)
 
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
 
     IF ( FCM_NU_DI /= 0._JPRB .OR. FCM_NU_DL /= 0._JPRB ) THEN
 
       ! saturation of k_scat
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         !IF ( LLMASKS(JLON) ) THEN
 
           ! saturation factors
@@ -509,25 +466,20 @@ do jlon=kidia,kfdia
           ZEODL(JLON,JLEV,JB)=ZCL*ZEODL(JLON,JLEV,JB)
 
         !ENDIF
-! removed hloop :       ENDDO
+      ENDDO
 
     ENDIF
 
   ! end of loop through levels
   ENDDO
-enddo
-!$acc end kernels
 
   ! 1.2.4 Fill output arrays
   ! ------------------------
 
   ! solar band
   JB=1
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         PEOASI(JLON,JLEV)=ZEOAI(JLON,JLEV,JB)
         PEOASL(JLON,JLEV)=ZEOAL(JLON,JLEV,JB)
@@ -550,28 +502,21 @@ do jlon=kidia,kfdia
         PUSBI(JLON,JLEV)=0.0_JPRB
         PUSBL(JLON,JLEV)=0.0_JPRB
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
   ! thermal band
   JB=2
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       PEOATI(JLON,JLEV)=ZEOAI(JLON,JLEV,JB)
       PEOATL(JLON,JLEV)=ZEOAL(JLON,JLEV,JB)
       PEODTI(JLON,JLEV)=ZEODI(JLON,JLEV,JB)
       PEODTL(JLON,JLEV)=ZEODL(JLON,JLEV,JB)
       PBSFTI(JLON,JLEV)=0.5_JPRB-0.375_JPRB*ZGI(JLON,JLEV,JB)
       PBSFTL(JLON,JLEV)=0.5_JPRB-0.375_JPRB*ZGL(JLON,JLEV,JB)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -636,21 +581,16 @@ IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
 ! & FCM_MU_AI=>YDPHY3%FCM_MU_AI, FCM_MU_AL=>YDPHY3%FCM_MU_AL, &
 ! & LCLSATUR=>YDPHY%LCLSATUR)
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZSIZE=PSIZE(JLON,JLEV)
       ZP=PP(0)   +ZSIZE*(PP(1)+ZSIZE*(PP(2)+ZSIZE*PP(3)))
       ZQ=1.0_JPRB+ZSIZE*(PQ(1)+ZSIZE*(PQ(2)+ZSIZE*PQ(3)))
       POUT(JLON,JLEV)=ZP/ZQ
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !END ASSOCIATE
 IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',1,ZHOOK_HANDLE)

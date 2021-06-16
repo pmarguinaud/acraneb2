@@ -398,43 +398,30 @@ ENDIF
 !     COMPUTE AEROSOL OPTICAL PROPERTIES.
 !-------------------------------------------------------------------------------
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZQICE(JLON,JLEV)=PQICE(JLON,JLEV)/MAX(ZEPSNEB,PNEB(JLON,JLEV))
     ZQLI (JLON,JLEV)=PQLI (JLON,JLEV)/MAX(ZEPSNEB,PNEB(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! ALPHA1, ALPHA2 FOR AEROSOLS.
 ! daand: add loops
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 		ZEO2TA(JLON,JLEV)=0._JPRB
 		ZEO2SA(JLON,JLEV)=0._JPRB
 		ZEO1TA(JLON,JLEV)=0._JPRB
 		ZEO1SA(JLON,JLEV)=0._JPRB
 		ZEOSA(JLON,JLEV)=0._JPRB
 		ZEOSADIR(JLON,JLEV)=0._JPRB
-! removed hloop : 	ENDDO
+	ENDDO
 ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JAE=1,6
   ZUNSCALE=4._JPRB*USAA(JAE)/(3._JPRB+4._JPRB*USAA(JAE))  ! -g
   ZUNSCALE=1._JPRB/(1._JPRB-ZUNSCALE*ZUNSCALE)            ! 1/(1 - g^2)
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZEO2TA=2._JPRB*BSFTA(JAE)*EODTA(JAE)*PDAER(JLON,JLEV,JAE)
       ZZEO2SA=2._JPRB*BSFSA(JAE)*EODSA(JAE)*PDAER(JLON,JLEV,JAE)
       ZEO2TA(JLON,JLEV)=ZEO2TA(JLON,JLEV)+ZZEO2TA
@@ -447,11 +434,9 @@ DO JAE=1,6
        & *PDAER(JLON,JLEV,JAE)
      ZEOSADIR(JLON,JLEV)=ZEOSADIR(JLON,JLEV)+ &
        & (EODSA(JAE)*ZUNSCALE+EOASA(JAE))*PDAER(JLON,JLEV,JAE)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !     II.2 - CALCULS SOLAIRES ET LUNAIRES.
 !     LORSQUE LE SOLEIL EST LEVE, ZMU0 ET ZII0 SONT CEUX DU SOLEIL.
@@ -464,27 +449,19 @@ enddo
 
 ! detemine mu_0 and its min/max values within intermittency window
 IF ( ICALS == 1 ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PGMU0_MIN(JLON)=1._JPRB
     PGMU0_MAX(JLON)=0._JPRB
     ZCOLON(JLON)=COS(PGELAM(JLON))
     ZSILON(JLON)=SIN(PGELAM(JLON))
     ZCOLAT(JLON)=SQRT(1.0_JPRB-PGEMU(JLON)**2)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
   ZCOVSR=RCOVSR
   ZSIVSR=RSIVSR
   ZCODT =COS(2._JPRB*RPI*TSTEP/RDAY)
   ZSIDT =SIN(2._JPRB*RPI*TSTEP/RDAY)
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JSTEP=0,MIN(NSORAYFR-1,NSTOP-KSTEP)
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ! store mu0 in global storage, so that it is not affected by change
       ! in solar declination in the following model steps
       PGMU0(JLON,JSTEP)=MAX( RSIDEC*PGEMU(JLON)   &
@@ -493,55 +470,38 @@ do jlon=kidia,kfdia
        & ,0.0_JPRB)
       PGMU0_MIN(JLON)=MIN(PGMU0_MIN(JLON),PGMU0(JLON,JSTEP))
       PGMU0_MAX(JLON)=MAX(PGMU0_MAX(JLON),PGMU0(JLON,JSTEP))
-! removed hloop :     ENDDO
+    ENDDO
     ZCOVSR_NEW=ZCOVSR*ZCODT-ZSIVSR*ZSIDT
     ZSIVSR    =ZSIVSR*ZCODT+ZCOVSR*ZSIDT
     ZCOVSR    =ZCOVSR_NEW
   ENDDO
-enddo
-!$acc end kernels
 ENDIF
 
 IF (LRAYLU) THEN
 
   ! get current solar/lunar mu0 and intensity (lunar when sun is down)
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZSOLLEV=0.5_JPRB*(1._JPRB-SIGN(1._JPRB,0._JPRB-PMU0(JLON)))
     ZMU0(JLON)=ZSOLLEV*PMU0(JLON)+(1._JPRB-ZSOLLEV)*PMU0LU(JLON)
     ZII0(JLON)=ZSOLLEV*RII0+(1._JPRB-ZSOLLEV)*RIP0LU
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ELSEIF ( ICALS == 0 ) THEN
 
   ! get current solar mu0 and intensity
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZMU0(JLON)=PMU0(JLON)
     ZII0(JLON)=RII0
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ELSE
 
   ! get precalculated mu0 from global storage and current intensity
   ISTEP=MOD(KSTEP,NSORAYFR)
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZMU0(JLON)=PGMU0(JLON,ISTEP)
     ZII0(JLON)=RII0
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ENDIF
 
@@ -556,15 +516,10 @@ ENDIF
 ! compute 1/(2.mu_0')
 ZEARRT=EARRT*(EARRT+2._JPRB)
 ZIEART=1._JPRB/EARRT
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZDM0I(JLON)=0.5_JPRB*(SQRT(ZMU0(JLON)*ZMU0(JLON)+ &
    & ZEARRT)-ZMU0(JLON))*ZIEART
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     II.4 - CALCUL DES LIMITES JOUR/NUIT.
 
@@ -577,45 +532,25 @@ IF (.NOT.LRAYPL.OR.(NPHYREP /= 0 .AND. NPHYREP /= -4)) THEN
 	
   ! PAS DE CALCUL DE "PLAGES" SOLAIRES.
   ! NO "DAYLIGHT" INTERVALS COMPUTATION.
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 	  LLMASKS(JLON)=.TRUE.
-! removed hloop : 	ENDDO
-enddo
-!$acc end kernels
+	ENDDO
 
 ELSE
 
   IF ( ICALS == 0 ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZMU00(JLON)=ZMU0(JLON)
-! removed hloop :     ENDDO
-enddo
-!$acc end kernels
+    ENDDO
   ELSE
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZMU00(JLON)=PGMU0_MAX(JLON)
-! removed hloop :     ENDDO
-enddo
-!$acc end kernels
+    ENDDO
   ENDIF
 	
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 	  LLMASKS(JLON) = ZMU00(KIDIA) > 0._JPRB
-! removed hloop : 	ENDDO
-enddo
-!$acc end kernels
+	ENDDO
 
 ENDIF
 
@@ -651,19 +586,14 @@ ENDIF
 
 ! determine min/max 1/(2.mu_0')
 IF ( ICALS > 0 ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZDM0I_MIN(JLON)=0.5_JPRB*(SQRT(PGMU0_MAX(JLON)*PGMU0_MAX(JLON)+ &
        & ZEARRT)-PGMU0_MAX(JLON))*ZIEART-ZEPS1
       ZDM0I_MAX(JLON)=0.5_JPRB*(SQRT(PGMU0_MIN(JLON)*PGMU0_MIN(JLON)+ &
        & ZEARRT)-PGMU0_MIN(JLON))*ZIEART+ZEPS1
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 ENDIF
 
 ! compute optical depths
@@ -682,38 +612,28 @@ ELSEIF ( ICALS == 1 ) THEN
    & KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
    & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MIN,&
    & ZDEOSI,ZUEOSI)
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         PGDEOSI(JLON,JLEV,1)=LOG(MAX(ZDEOSI(JLON,JLEV),ZTRLI))
         PGUEOSI(JLON,JLEV,1)=LOG(MAX(ZUEOSI(JLON,JLEV),ZTRLI))
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
   ! compute log of optical depths for max 1/(2.mu_0') alias min sun elevation
   CALL ACRANEB_TRANSS(YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
    & KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
    & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MAX,&
    & ZDEOSI,ZUEOSI)
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         PGDEOSI(JLON,JLEV,2)=LOG(MAX(ZDEOSI(JLON,JLEV),ZTRLI))
         PGUEOSI(JLON,JLEV,2)=LOG(MAX(ZUEOSI(JLON,JLEV),ZTRLI))
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -721,34 +641,24 @@ ENDIF
 IF ( ICALS > 0 ) THEN
 
   ! precompute interpolation weights
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZWEIGHT(JLON)=LOG(ZDM0I    (JLON)/ZDM0I_MIN(JLON))/ &
        &            LOG(ZDM0I_MAX(JLON)/ZDM0I_MIN(JLON))
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
   ! interpolation with respect to 1/(2.mu_0') in log-log scale
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         ZDEOSI(JLON,JLEV)=EXP(PGDEOSI(JLON,JLEV,1)+ZWEIGHT(JLON)* &
          & (PGDEOSI(JLON,JLEV,2)-PGDEOSI(JLON,JLEV,1)))
         ZUEOSI(JLON,JLEV)=EXP(PGUEOSI(JLON,JLEV,1)+ZWEIGHT(JLON)* &
          & (PGUEOSI(JLON,JLEV,2)-PGUEOSI(JLON,JLEV,1)))
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -766,132 +676,87 @@ IF ( ICALT > 0 ) THEN
   IF ( NTHRAYFR /= 1 ) THEN
 
     ! full timestep within intermittency => store necessary arrays
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       PGRSURF(JLON)=ZRSURF(JLON)
-! removed hloop :     ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
+    ENDDO
     DO JLEV=KTDIA,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         PGEOXT(JLON,JLEV)=ZEOXT(JLON,JLEV)
-! removed hloop :       ENDDO
+      ENDDO
       IF ( LRPROX ) THEN
-! removed hloop :         DO JLON=KIDIA,KFDIA
+        DO JLON=KIDIA,KFDIA
           PGEOLT(JLON,JLEV)=ZEOLT(JLON,JLEV)
-! removed hloop :         ENDDO
+        ENDDO
       ENDIF
     ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA-1,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         PGDEOTI (JLON,JLEV)=ZDEOTI (JLON,JLEV)   
         PGDEOTI2(JLON,JLEV)=ZDEOTI2(JLON,JLEV)   
         PGUEOTI (JLON,JLEV)=ZUEOTI (JLON,JLEV)   
         PGUEOTI2(JLON,JLEV)=ZUEOTI2(JLON,JLEV)   
-! removed hloop :       ENDDO
+      ENDDO
       IF ( LRPROX ) THEN
-! removed hloop :         DO JLON=KIDIA,KFDIA
+        DO JLON=KIDIA,KFDIA
           PGRPROX(JLON,JLEV)=ZRPROX(JLON,JLEV)
-! removed hloop :         ENDDO
+        ENDDO
       ENDIF
     ENDDO
-enddo
-!$acc end kernels
 
   ENDIF
 
 ELSE
 
   ! partial timestep within intermittency => read necessary arrays
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZRSURF(JLON)=PGRSURF(JLON)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
+  ENDDO
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZEOXT(JLON,JLEV)=PGEOXT(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
     IF ( LRPROX ) THEN
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZEOLT(JLON,JLEV)=PGEOLT(JLON,JLEV)
-! removed hloop :       ENDDO
+      ENDDO
     ENDIF
   ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZDEOTI (JLON,JLEV)=PGDEOTI (JLON,JLEV)
       ZDEOTI2(JLON,JLEV)=PGDEOTI2(JLON,JLEV)
       ZUEOTI (JLON,JLEV)=PGUEOTI (JLON,JLEV)
       ZUEOTI2(JLON,JLEV)=PGUEOTI2(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
     IF ( LRPROX ) THEN
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZRPROX (JLON,JLEV)=PGRPROX (JLON,JLEV)
-! removed hloop :       ENDDO
+      ENDDO
     ENDIF
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
 ! compute minimum optical depth
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA-1,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZEOTI(JLON,JLEV)=MIN(ZUEOTI(JLON,JLEV),ZDEOTI(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! compute total solar descending optical depths
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LLMASKS(JLON) ) THEN
     ZDEOSA(JLON,KTDIA-1)=ZDM0I(JLON)*ZDEOSI(JLON,KTDIA-1)
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
+ENDDO
 DO JLEV=KTDIA,KLEV
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZDEOSA(JLON,JLEV)=ZDEOSA(JLON,JLEV-1)+ZDM0I(JLON)*ZDEOSI(JLON,JLEV)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! call cloud model to compute saturated cloud optical properties
 CALL AC_CLOUD_MODEL2( YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
@@ -905,19 +770,14 @@ CALL AC_CLOUD_MODEL2( YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
  & )
 
 ! ALPHA1, ALPHA2 FOR ICE/LIQUID (THERMAL BAND).
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZEO2TI(JLON,JLEV)=2._JPRB*ZBSFTI(JLON,JLEV)*ZEODTI(JLON,JLEV)
     ZEO2TN(JLON,JLEV)=2._JPRB*ZBSFTN(JLON,JLEV)*ZEODTN(JLON,JLEV)
     ZEO1TI(JLON,JLEV)=ZEO2TI(JLON,JLEV)+2._JPRB*ZEOATI(JLON,JLEV)
     ZEO1TN(JLON,JLEV)=ZEO2TN(JLON,JLEV)+2._JPRB*ZEOATN(JLON,JLEV)
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !     IV - CALCUL DES ELEMENTS DE GEOMETRIE NUAGEUSE. LES TERMES ZB
 !     SERVENT DE STOCKAGE TEMPORAIRE POUR LES "ALPHA", "BETA", "GAMMA"
@@ -970,100 +830,70 @@ IF (LRNUMX) THEN
 
   ! MAXIMUM-RANDOM OVERLAPS
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZB1(JLON,KTDIA)=1._JPRB-PNEB(JLON,KTDIA)
     ZB3(JLON,KTDIA)=1._JPRB
     ZNMXB(JLON)=MAX(PNEB(JLON,KTDIA),PNEB(JLON,KTDIA+1))
     ZNMNB(JLON)=MIN(PNEB(JLON,KTDIA),PNEB(JLON,KTDIA+1))
     ZB1(JLON,KTDIA+1)=(1._JPRB-ZNMXB(JLON))/(1._JPRB-PNEB(JLON,KTDIA))
     ZB3(JLON,KTDIA+1)=ZNMNB(JLON)/PNEB(JLON,KTDIA)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZNMXH(JLON)=ZNMXB(JLON)
       ZNMNH(JLON)=ZNMNB(JLON)
-! removed hloop :     ENDDO
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    ENDDO
+    DO JLON=KIDIA,KFDIA
       ZNMXB(JLON)=MAX(PNEB(JLON,JLEV),PNEB(JLON,JLEV+1))
       ZNMNB(JLON)=MIN(PNEB(JLON,JLEV),PNEB(JLON,JLEV+1))
       ZB1(JLON,JLEV+1)=(1._JPRB-ZNMXB(JLON))*(1._JPRB/(1._JPRB-PNEB(JLON,JLEV)))
       ZB2(JLON,JLEV-1)=(1._JPRB-ZNMXH(JLON))*(1._JPRB/(1._JPRB-PNEB(JLON,JLEV)))
       ZB3(JLON,JLEV+1)=ZNMNB(JLON)*(1._JPRB/PNEB(JLON,JLEV))
       ZB4(JLON,JLEV-1)=ZNMNH(JLON)*(1._JPRB/PNEB(JLON,JLEV))
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZNMXH(JLON)=ZNMXB(JLON)
     ZNMNH(JLON)=ZNMNB(JLON)
     ZB2(JLON,KLEV-1)=(1._JPRB-ZNMXH(JLON))/(1._JPRB-PNEB(JLON,KLEV))
     ZB4(JLON,KLEV-1)=ZNMNH(JLON)/PNEB(JLON,KLEV)
     ZB2(JLON,KLEV)=1._JPRB
     ZB4(JLON,KLEV)=1._JPRB
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
   ! relax maximum-random overlaps towards random overlaps according to
   ! Shonk decorrelation length
   IF (LRNUEXP) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA+1,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZCLOV=EXP((PAPRSF(JLON,JLEV-1)-PAPRSF(JLON,JLEV))/PDECRD(JLON))
         ZCNEB=1._JPRB-PNEB(JLON,JLEV)
         ZB1(JLON,JLEV)=ZCNEB          +ZCLOV*(ZB1(JLON,JLEV)-ZCNEB          )
         ZB3(JLON,JLEV)=PNEB(JLON,JLEV)+ZCLOV*(ZB3(JLON,JLEV)-PNEB(JLON,JLEV))
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA,KLEV-1
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZCLOV=EXP((PAPRSF(JLON,JLEV)-PAPRSF(JLON,JLEV+1))/PDECRD(JLON))
         ZCNEB=1._JPRB-PNEB(JLON,JLEV)
         ZB2(JLON,JLEV)=ZCNEB          +ZCLOV*(ZB2(JLON,JLEV)-ZCNEB          )
         ZB4(JLON,JLEV)=PNEB(JLON,JLEV)+ZCLOV*(ZB4(JLON,JLEV)-PNEB(JLON,JLEV))
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
-enddo
-!$acc end kernels
   ENDIF
 
 ELSE
 
   ! RANDOM OVERLAPS
 
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZB1(JLON,JLEV)=1._JPRB-PNEB(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -1089,11 +919,8 @@ ENDIF ! LRNUMX
 !     FLUX DE CORPS NOIR.
 !     BLACK-BODY FLUX.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZBB(JLON,JLEV-1)=RSIGMA*(PT(JLON,JLEV)*PT(JLON,JLEV))&
      & *(PT(JLON,JLEV)*PT(JLON,JLEV))
 
@@ -1102,19 +929,12 @@ DO JLEV=KTDIA,KLEV
 
     ZDAMP(JLON,JLEV)=ZSECUR*PT(JLON,JLEV)*(PT(JLON,JLEV)&
      & *PT(JLON,JLEV))/(PDELP(JLON,JLEV)*PCP(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZBB(JLON,KLEV)=RSIGMA*(PTS(JLON)*PTS(JLON))*(PTS(JLON)*PTS(JLON))
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     V.2 - COMPUTATION OF EBL FLUXES AND BRACKETING WEIGHTS.
 !-------------------------------------------------------------------------------
@@ -1123,51 +943,33 @@ enddo
 IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
   ! distant and local layer transmissions
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZTAUD(JLON,JLEV)=EXP(MAX(-ZEOTI(JLON,JLEV),ZARGLI))
       ZTAUL(JLON,JLEV)=EXP(MAX(-ZEOXT(JLON,JLEV),ZARGLI))
-! removed hloop :     ENDDO
-  ENDDO
-enddo
-!$acc end kernels
-
-  ! distant 'grey' transmissions for each pair of levels (multiplicative)
-!$acc kernels
-do jlon=kidia,kfdia
-
-  DO JLEV1=KTDIA-1,KLEV      ! initial half level
-! removed hloop :     DO JLON=KIDIA,KFDIA
-      ZTAU(JLON,JLEV1,JLEV1)=1._JPRB
-! removed hloop :     ENDDO
-    DO JLEV2=JLEV1+1,KLEV    ! final half level
-! removed hloop :       DO JLON=KIDIA,KFDIA
-        ZTAU(JLON,JLEV1,JLEV2)=ZTAU(JLON,JLEV1,JLEV2-1)*ZTAUD(JLON,JLEV2)
-! removed hloop :       ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
+
+  ! distant 'grey' transmissions for each pair of levels (multiplicative)
+  DO JLEV1=KTDIA-1,KLEV      ! initial half level
+    DO JLON=KIDIA,KFDIA
+      ZTAU(JLON,JLEV1,JLEV1)=1._JPRB
+    ENDDO
+    DO JLEV2=JLEV1+1,KLEV    ! final half level
+      DO JLON=KIDIA,KFDIA
+        ZTAU(JLON,JLEV1,JLEV2)=ZTAU(JLON,JLEV1,JLEV2-1)*ZTAUD(JLON,JLEV2)
+      ENDDO
+    ENDDO
+  ENDDO
 
   ! EBL flux for 'grey' minimum optical depths
   ! (zfluxd positive downwards, D - distant)
   ! daand: add explicit loops
-!$acc kernels
-do jlon=kidia,kfdia
-
 	DO JLEV=0,KLEV
-! removed hloop : 	  DO JLON=KIDIA,KFDIA
+	  DO JLON=KIDIA,KFDIA
 		  ZFLUXD(JLON,JLEV)=0._JPRB
-! removed hloop : 		ENDDO
+		ENDDO
 	ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers
@@ -1175,54 +977,39 @@ do jlon=kidia,kfdia
       ILEV=JLEV1+1           ! include exchange between adjacent layers
     ENDIF
     DO JLEV2=ILEV,KLEV       ! exchanging layer 2
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZFLUXE(JLON)=(ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*      &
          & (ZTAU(JLON,JLEV1,JLEV2  )-ZTAU(JLON,JLEV1-1,JLEV2  )- &
          &  ZTAU(JLON,JLEV1,JLEV2-1)+ZTAU(JLON,JLEV1-1,JLEV2-1))
-! removed hloop :       ENDDO
+      ENDDO
       DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
-! removed hloop :         DO JLON=KIDIA,KFDIA
+        DO JLON=KIDIA,KFDIA
           ZFLUXD(JLON,JLEV)=ZFLUXD(JLON,JLEV)+ZFLUXE(JLON)
-! removed hloop :         ENDDO
+        ENDDO
       ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
   ! local 'grey' transmissions for each pair of levels (multiplicative)
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV1=KTDIA-1,KLEV      ! initial half level
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZTAU(JLON,JLEV1,JLEV1)=1._JPRB
-! removed hloop :     ENDDO
+    ENDDO
     DO JLEV2=JLEV1+1,KLEV    ! final half level
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZTAU(JLON,JLEV1,JLEV2)=ZTAU(JLON,JLEV1,JLEV2-1)*ZTAUL(JLON,JLEV2)
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
  
   ! EBL flux for 'grey' maximum optical depths
   ! (ZFLUXL positive downwards, L - local)
   ! daand: add explicit loops
-!$acc kernels
-do jlon=kidia,kfdia
-
 	DO JLEV=0,KLEV
-! removed hloop : 	  DO JLON=KIDIA,KFDIA
+	  DO JLON=KIDIA,KFDIA
 		  ZFLUXL(JLON,JLEV)=0._JPRB
-! removed hloop : 		ENDDO
+		ENDDO
 	ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers
@@ -1230,20 +1017,18 @@ do jlon=kidia,kfdia
       ILEV=JLEV1+1           ! include exchange between adjacent layers
     ENDIF
     DO JLEV2=ILEV,KLEV       ! exchanging layer 2
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZFLUXE(JLON)=(ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*      &
          & (ZTAU(JLON,JLEV1,JLEV2  )-ZTAU(JLON,JLEV1-1,JLEV2  )- &
          &  ZTAU(JLON,JLEV1,JLEV2-1)+ZTAU(JLON,JLEV1-1,JLEV2-1))
-! removed hloop :       ENDDO
+      ENDDO
       DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
-! removed hloop :         DO JLON=KIDIA,KFDIA
+        DO JLON=KIDIA,KFDIA
           ZFLUXL(JLON,JLEV)=ZFLUXL(JLON,JLEV)+ZFLUXE(JLON)
-! removed hloop :         ENDDO
+        ENDDO
       ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -1251,47 +1036,29 @@ ENDIF
 IF ( NRAUTOEV == 0.AND.ICALT == 1 ) THEN
 
   ! statistically fitted EBL flux
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZFLUXR(JLON,KTDIA-1)=0._JPRB
     ZFLUXR(JLON,KLEV   )=0._JPRB
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
+  ENDDO
   DO JLEV=KTDIA,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZSIGMA=PAPRS(JLON,JLEV)/PAPRS(JLON,KLEV)
       ZFLUXR(JLON,JLEV)= &
        & (FSM_AA(0)+ZSIGMA*(FSM_AA(1)+ZSIGMA*FSM_AA(2)))*ZFLUXD(JLON,JLEV)+ &
        & (FSM_BB(0)+ZSIGMA*(FSM_BB(1)+ZSIGMA*FSM_BB(2)))*ZFLUXL(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSEIF ( ICALT == 2 ) THEN
 
   ! true EBL flux
   ! (ZFLUXR positive downwards, R - real)
   ! daand: add explicit loops
-!$acc kernels
-do jlon=kidia,kfdia
-
 	DO JLEV=0,KLEV
-! removed hloop : 	  DO JLON=KIDIA,KFDIA
+	  DO JLON=KIDIA,KFDIA
 		  ZFLUXR(JLON,JLEV)=0._JPRB
-! removed hloop : 		ENDDO
+		ENDDO
 	ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
     IF ( LRPROX ) THEN
       ILEV=JLEV1+2           ! exclude exchange between adjacent layers
@@ -1299,34 +1066,29 @@ do jlon=kidia,kfdia
       ILEV=JLEV1+1           ! include exchange between adjacent layers
     ENDIF
     DO JLEV2=ILEV,KLEV       ! exchanging layer 2
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZFLUXE(JLON)=                                                      &
          & (ZBB(JLON,JLEV2-1)-ZBB(JLON,JLEV1-1))*ZPNER0(JLON,JLEV1,JLEV2)+ &
          & 4._JPRB*(PT(JLON,JLEV2)/RTL-1._JPRB)*ZBB(JLON,JLEV2-1)*         &
          & (ZPNER1(JLON,JLEV1,JLEV2)-ZPNER0(JLON,JLEV1,JLEV2))-            &
          & 4._JPRB*(PT(JLON,JLEV1)/RTL-1._JPRB)*ZBB(JLON,JLEV1-1)*         &
          & (ZPNER1(JLON,JLEV1,JLEV2)-ZPNER0(JLON,JLEV1,JLEV2))
-! removed hloop :       ENDDO
+      ENDDO
       DO JLEV=JLEV1,JLEV2-1  ! half levels between layers 1 and 2
-! removed hloop :         DO JLON=KIDIA,KFDIA
+        DO JLON=KIDIA,KFDIA
           ZFLUXR(JLON,JLEV)=ZFLUXR(JLON,JLEV)+ZFLUXE(JLON)
-! removed hloop :         ENDDO
+        ENDDO
       ENDDO
     ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
 ! computation of bracketing weights (with smoothing) and offset
 IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZDEBL=ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV)
       ZW   =RMIXD*RMIXD/(RMIXD*RMIXD+ZDEBL*ZDEBL)
       ZMIXP(JLON,JLEV)=MAX(0._JPRB,MIN(1._JPRB,                    &
@@ -1337,10 +1099,8 @@ do jlon=kidia,kfdia
        & ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV))))
       ZFLUXC(JLON,JLEV)=ZFLUXR(JLON,JLEV)-(ZFLUXD(JLON,JLEV)+ &
        & ZMIXP(JLON,JLEV)*(ZFLUXL(JLON,JLEV)-ZFLUXD(JLON,JLEV)))
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -1351,32 +1111,22 @@ IF (NTHRAYFR /= 1.OR.NRAUTOEV > 1) THEN
   IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
     ! timestep with update of bracketing weights => store PGMIXP, PGFLUXC
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA-1,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         PGMIXP (JLON,JLEV)=ZMIXP (JLON,JLEV)
         PGFLUXC(JLON,JLEV)=ZFLUXC(JLON,JLEV)
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
-enddo
-!$acc end kernels
 
   ELSE
 
     ! timestep without update of bracketing weights => read PGMIXP, PGFLUXC
-!$acc kernels
-do jlon=kidia,kfdia
-
     DO JLEV=KTDIA-1,KLEV
-! removed hloop :       DO JLON=KIDIA,KFDIA
+      DO JLON=KIDIA,KFDIA
         ZMIXP (JLON,JLEV)=PGMIXP (JLON,JLEV)
         ZFLUXC(JLON,JLEV)=PGFLUXC(JLON,JLEV)
-! removed hloop :       ENDDO
+      ENDDO
     ENDDO
-enddo
-!$acc end kernels
 
   ENDIF
 
@@ -1445,35 +1195,25 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 !     FOR IDEALIZED PROFILE A.
 !-------------------------------------------------------------------------------
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZFDC(JLON,KTDIA-1)=EXP(MAX(-ZDEOTI2(JLON,KTDIA-1),ZARGLI))
   ZFMC(JLON,KTDIA-1)=0._JPRB
   IF (LRNUMX) THEN
     ZFDN(JLON,KTDIA-1)=0._JPRB
     ZFMN(JLON,KTDIA-1)=0._JPRB
   ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+ENDDO
 
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZFMC(JLON,JLEV)=0._JPRB
     ZFDC(JLON,JLEV)=0._JPRB
     IF (LRNUMX) THEN
       ZFDN(JLON,JLEV)=0._JPRB
       ZFMN(JLON,JLEV)=0._JPRB
     ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !     VI.3 - SOLVE THE ADDING METHOD LINEAR SYSTEM BY GAUSSIAN
 !     ELIMINATION BACK-SUBSTITUTION.
@@ -1493,10 +1233,7 @@ CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! ZTRB      : FLUX "Z" NET A LA BASE D'UNE COUCHE.
 !           : "Z" NET FLUX AT THE BOTTOM OF A LAYER.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRS(JLON)=ZFDC(JLON,KLEV)-ZFMC(JLON,KLEV)
 
   ! CALCULS OPTIONNELS SUIVANT LA GEOMETRIE NUAGEUSE CHOISIE.
@@ -1506,21 +1243,16 @@ do jlon=kidia,kfdia
   ENDIF
 
   PFRTH(JLON,KLEV)=-ZBB(JLON,KLEV)*MIN(1._JPRB,ZTRS(JLON)*ZRSURF(JLON))
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KLEV,KTDIA,-1
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRB(JLON)=ZTRS(JLON)
-! removed hloop :   ENDDO
+  ENDDO
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRS(JLON)=ZFDC(JLON,JLEV-1)-ZFMC(JLON,JLEV-1)
 
 !     CALCULS OPTIONNELS SUIVANT LA GEOMETRIE NUAGEUSE CHOISIE.
@@ -1535,11 +1267,9 @@ DO JLEV=KLEV,KTDIA,-1
     PFRTH(JLON,JLEV-1)=PFRTH(JLON,JLEV)+ZBB(JLON,JLEV-1)&
      & *(ZTRB(JLON)-ZTRS(JLON))/(1._JPRB-(ZTRB(JLON)-ZTRS(JLON))&
      & *ZDAMP(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end kernels
 
 !     VII - CALCUL DES FLUX AVEC L'HYPOTHESE "EXCHANGE WITH SURFACE".
 
@@ -1561,10 +1291,7 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 
 IF (LRNUMX) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZFDC(JLON,KTDIA-1)=0._JPRB
     ZFMC(JLON,KTDIA-1)=0._JPRB
     ZFDC(JLON,KTDIA)=0._JPRB
@@ -1581,30 +1308,20 @@ do jlon=kidia,kfdia
     ZFMN(JLON,KLEV-1)=-ZA4N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZFDN(JLON,KLEV)=-ZA5N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZFMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZFDC(JLON,JLEV)=0._JPRB
       ZFMC(JLON,JLEV-1)=0._JPRB
       ZFDN(JLON,JLEV)=0._JPRB
       ZFMN(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZFDC(JLON,KTDIA-1)=0._JPRB
     ZFMC(JLON,KTDIA-1)=0._JPRB
     ZFDC(JLON,KTDIA  )=0._JPRB
@@ -1613,21 +1330,14 @@ do jlon=kidia,kfdia
     ZFDC(JLON,KLEV   )=-(ZA5C(JLON,KLEV)*ZB1(JLON,KLEV)+ &
      &                   ZA5N(JLON,KLEV)*PNEB(JLON,KLEV))
     ZFMC(JLON,KLEV   )=1._JPRB-PEMIS(JLON)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZFDC(JLON,JLEV)=0._JPRB
       ZFMC(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -1649,10 +1359,7 @@ CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! ZTRB      : FLUX "Z" NET A LA BASE D'UNE COUCHE.
 !           : "Z" NET FLUX AT THE BOTTOM OF A LAYER.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRB(JLON)=ZFDC(JLON,KTDIA-1)-ZFMC(JLON,KTDIA-1)
 
   ! CALCULS OPTIONNELS SUIVANT LA GEOMETRIE NUAGEUSE CHOISIE.
@@ -1662,20 +1369,15 @@ do jlon=kidia,kfdia
   ENDIF
 
   ZFRTH(JLON,KTDIA-1)=0._JPRB
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
   LLREWS=(JLEV==KLEV)
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRS(JLON)=ZTRB(JLON)
-! removed hloop :   ENDDO
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  ENDDO
+  DO JLON=KIDIA,KFDIA
     ZTRB(JLON)=ZFDC(JLON,JLEV)-ZFMC(JLON,JLEV)
 
     ! CALCULS OPTIONNELS SUIVANT LA GEOMETRIE NUAGEUSE CHOISIE.
@@ -1692,10 +1394,8 @@ DO JLEV=KTDIA,KLEV
     ZFRTH(JLON,JLEV)=ZFRTH(JLON,JLEV-1)+(ZBB(JLON,KLEV)&
      & -ZBB(JLON,JLEV-1))*(ZTRS(JLON)-ZTRB(JLON))&
      & /(1._JPRB-(ZTRS(JLON)-ZTRB(JLON))*ZDAMP(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !     VIII - CALCUL DES COMPLEMENTS AU FLUX DU CORPS NOIR DES FLUX
 !     THERMIQUES 'ANTI-SURESTIMATION' POUR LE PROFIL DE TEMPERATURE REEL
@@ -1721,18 +1421,13 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 
 ! GLOBAL STORAGE FOR THE 'PROXIMITY' COMPUTATION.
 IF (LRPROX) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZGEPC(JLON,JLEV)=(1._JPRB-PNEB(JLON,JLEV))*ZA4C(JLON,JLEV)&
        & +PNEB(JLON,JLEV)*ZA4N(JLON,JLEV)
       ZDA4G(JLON,JLEV)=ZA4C(JLON,JLEV)-ZA4N(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 ENDIF
 
 !     VIII.2 - PREPARE RIGHT-HAND SIDES OF ADDING METHOD LINEAR SYSTEM
@@ -1743,44 +1438,31 @@ ENDIF
 
 ! RIGHT-HAND SIDE FOR PROFILE A.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTDC(JLON,KTDIA-1)=EXP(MAX(-ZEOTI(JLON,KTDIA-1),ZARGLI))
   ZTMC(JLON,KTDIA-1)=0._JPRB
   IF (LRNUMX) THEN
     ZTDN(JLON,KTDIA-1)=0._JPRB
     ZTMN(JLON,KTDIA-1)=0._JPRB
   ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+ENDDO
 
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTMC(JLON,JLEV)=0._JPRB
     ZTDC(JLON,JLEV)=0._JPRB
     IF (LRNUMX) THEN
       ZTDN(JLON,JLEV)=0._JPRB
       ZTMN(JLON,JLEV)=0._JPRB
     ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! RIGHT-HAND SIDE FOR PROFILE B.
 
 IF (LRNUMX) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZZTDC(JLON,KTDIA-1)=0._JPRB
     ZZZTMC(JLON,KTDIA-1)=0._JPRB
     ZZZTDC(JLON,KTDIA)=0._JPRB
@@ -1796,30 +1478,20 @@ do jlon=kidia,kfdia
     ZZZTMN(JLON,KLEV-1)=-ZA4N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZZZTDN(JLON,KLEV)=-ZA5N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZZZTMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZZTDC(JLON,JLEV)=0._JPRB
       ZZZTMC(JLON,JLEV-1)=0._JPRB
       ZZZTDN(JLON,JLEV)=0._JPRB
       ZZZTMN(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZZTDC(JLON,KTDIA-1)=0._JPRB
     ZZZTMC(JLON,KTDIA-1)=0._JPRB
     ZZZTDC(JLON,KTDIA)=0._JPRB
@@ -1828,21 +1500,14 @@ do jlon=kidia,kfdia
     ZZZTDC(JLON,KLEV)=-(ZA5C(JLON,KLEV)*ZB1(JLON,KLEV)+ZA5N(JLON,KLEV)&
      & *PNEB(JLON,KLEV))
     ZZZTMC(JLON,KLEV)=1._JPRB-PEMIS(JLON)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZZTDC(JLON,JLEV)=0._JPRB
       ZZZTMC(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -1850,10 +1515,7 @@ ENDIF ! LRNUMX
 
 IF (LRNUMX) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZTDC(JLON,KTDIA-1)=ZBB(JLON,KTDIA-1)*ZTDC(JLON,KTDIA-1)
     ZZTMC(JLON,KTDIA-1)=ZA4C(JLON,KTDIA)*(ZBB(JLON,KTDIA-1)&
      & -ZBB(JLON,KTDIA)) 
@@ -1871,15 +1533,10 @@ do jlon=kidia,kfdia
      & *(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA))
     ZZTMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)&
      & *(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZTMC(JLON,JLEV-1)=ZA4C(JLON,JLEV)*(ZBB(JLON,JLEV-1)&
        & -ZBB(JLON,JLEV))+ZA5C(JLON,JLEV)*(ZBB(JLON,JLEV-1)&
        & -ZBB(JLON,JLEV-2))
@@ -1894,32 +1551,22 @@ do jlon=kidia,kfdia
       ZZTDN(JLON,JLEV)=PNEB(JLON,JLEV)*(ZA5N(JLON,JLEV)&
        & *(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+ZA4N(JLON,JLEV)&
        & *(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV-2)))
-! removed hloop :    ENDDO
+   ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZTDC(JLON,KTDIA-1)=ZBB(JLON,KTDIA-1)*ZTDC(JLON,KTDIA-1)
     ZZTMC(JLON,KTDIA-1)=(ZA4C(JLON,KTDIA)*ZB1(JLON,KTDIA)+ZA4N(JLON,KTDIA)&
      & *PNEB(JLON,KTDIA))*(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA)) 
     ZZTDC(JLON,KTDIA)=(ZA5C(JLON,KTDIA)*ZB1(JLON,KTDIA)+ZA5N(JLON,KTDIA)&
      & *PNEB(JLON,KTDIA))*(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA))
     ZZTMC(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
     ZZTMC(JLON,JLEV-1)=(ZA4C(JLON,JLEV)*ZB1(JLON,JLEV)+ZA4N(JLON,JLEV)&
      & *PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+(ZA5C(JLON,JLEV)&
      & *ZB1(JLON,JLEV)+ZA5N(JLON,JLEV)*PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)&
@@ -1928,10 +1575,8 @@ do jlon=kidia,kfdia
      & *PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+(ZA4C(JLON,JLEV)&
      & *ZB1(JLON,JLEV)+ZA4N(JLON,JLEV)*PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)&
      & -ZBB(JLON,JLEV-2))
-! removed hloop :    ENDDO
+   ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -1958,18 +1603,13 @@ IF (LRPROX) THEN
    & PDELP,ZEOLT,ZEO1TI,ZEO2TI,ZEO1TN,ZEO2TN,ZQICE,&
    & ZQLI,ZEO1TA,ZEO2TA,ZA4C,ZA5C,ZA4N,ZA5N)
 
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZLEPC(JLON,JLEV)=(1._JPRB-PNEB(JLON,JLEV))*ZA4C(JLON,JLEV)&
        & +PNEB(JLON,JLEV)*ZA4N(JLON,JLEV)
       ZDA4L(JLON,JLEV)=ZA4C(JLON,JLEV)-ZA4N(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF
 
@@ -1980,70 +1620,47 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & ZQLI,ZEO1TA,ZEO2TA,ZA4C,ZA5C,ZA4N,ZA5N)
 
 IF ( LRPROX ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZXEPC(JLON,JLEV)=(1._JPRB-PNEB(JLON,JLEV))*ZA4C(JLON,JLEV)&
        & +PNEB(JLON,JLEV)*ZA4N(JLON,JLEV)
       ZDA4X(JLON,JLEV)=ZA4C(JLON,JLEV)-ZA4N(JLON,JLEV)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 ELSEIF ( LRTPP ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZLEPC(JLON,KLEV)=(1._JPRB-PNEB(JLON,KLEV))*ZA4C(JLON,KLEV)&
      & +PNEB(JLON,KLEV)*ZA4N(JLON,KLEV)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 ENDIF
 
 ! RHS FOR PROFILE A
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZFDC(JLON,KTDIA-1)=EXP(MAX(-ZDEOTI(JLON,KTDIA-1),ZARGLI))
   ZFMC(JLON,KTDIA-1)=0._JPRB
   IF (LRNUMX) THEN
     ZFDN(JLON,KTDIA-1)=0._JPRB
     ZFMN(JLON,KTDIA-1)=0._JPRB
   ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+ENDDO
 
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZFMC(JLON,JLEV)=0._JPRB
     ZFDC(JLON,JLEV)=0._JPRB
     IF (LRNUMX) THEN
       ZFDN(JLON,JLEV)=0._JPRB
       ZFMN(JLON,JLEV)=0._JPRB
     ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! RHS FOR PROFILE C
 
 IF (LRNUMX) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZFDC(JLON,KTDIA-1)=ZBB(JLON,KTDIA-1)*ZFDC(JLON,KTDIA-1)
     ZZFMC(JLON,KTDIA-1)=ZA4C(JLON,KTDIA)*(ZBB(JLON,KTDIA-1)&
      & -ZBB(JLON,KTDIA)) 
@@ -2061,15 +1678,10 @@ do jlon=kidia,kfdia
      & *(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA))
     ZZFMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)&
      & *(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZFMC(JLON,JLEV-1)=ZA4C(JLON,JLEV)*(ZBB(JLON,JLEV-1)&
        & -ZBB(JLON,JLEV))+ZA5C(JLON,JLEV)*(ZBB(JLON,JLEV-1)&
        & -ZBB(JLON,JLEV-2))
@@ -2084,32 +1696,22 @@ do jlon=kidia,kfdia
       ZZFDN(JLON,JLEV)=PNEB(JLON,JLEV)*(ZA5N(JLON,JLEV)&
        & *(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+ZA4N(JLON,JLEV)&
        & *(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV-2)))
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZFDC(JLON,KTDIA-1)=ZBB(JLON,KTDIA-1)*ZFDC(JLON,KTDIA-1)
     ZZFMC(JLON,KTDIA-1)=(ZA4C(JLON,KTDIA)*ZB1(JLON,KTDIA)+ZA4N(JLON,KTDIA)&
      & *PNEB(JLON,KTDIA))*(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA)) 
     ZZFDC(JLON,KTDIA)=(ZA5C(JLON,KTDIA)*ZB1(JLON,KTDIA)+ZA5N(JLON,KTDIA)&
      & *PNEB(JLON,KTDIA))*(ZBB(JLON,KTDIA-1)-ZBB(JLON,KTDIA))
     ZZFMC(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
     ZZFMC(JLON,JLEV-1)=(ZA4C(JLON,JLEV)*ZB1(JLON,JLEV)+ZA4N(JLON,JLEV)&
      & *PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+(ZA5C(JLON,JLEV)&
      & *ZB1(JLON,JLEV)+ZA5N(JLON,JLEV)*PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)&
@@ -2118,10 +1720,8 @@ do jlon=kidia,kfdia
      & *PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))+(ZA4C(JLON,JLEV)&
      & *ZB1(JLON,JLEV)+ZA4N(JLON,JLEV)*PNEB(JLON,JLEV))*(ZBB(JLON,JLEV-1)&
      & -ZBB(JLON,JLEV-2))
-! removed hloop :    ENDDO
+   ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -2129,10 +1729,7 @@ ENDIF ! LRNUMX
 
 IF (LRNUMX) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZZFDC(JLON,KTDIA-1)=0._JPRB
     ZZZFMC(JLON,KTDIA-1)=0._JPRB
     ZZZFDC(JLON,KTDIA)=0._JPRB
@@ -2149,30 +1746,20 @@ do jlon=kidia,kfdia
     ZZZFMN(JLON,KLEV-1)=-ZA4N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZZZFDN(JLON,KLEV)=-ZA5N(JLON,KLEV)*PNEB(JLON,KLEV)
     ZZZFMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZZFDC(JLON,JLEV)=0._JPRB
       ZZZFMC(JLON,JLEV-1)=0._JPRB
       ZZZFDN(JLON,JLEV)=0._JPRB
       ZZZFMN(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZZZFDC(JLON,KTDIA-1)=0._JPRB
     ZZZFMC(JLON,KTDIA-1)=0._JPRB
     ZZZFDC(JLON,KTDIA)=0._JPRB
@@ -2181,21 +1768,14 @@ do jlon=kidia,kfdia
     ZZZFDC(JLON,KLEV)=-(ZA5C(JLON,KLEV)*ZB1(JLON,KLEV)+ZA5N(JLON,KLEV)&
      & *PNEB(JLON,KLEV))
     ZZZFMC(JLON,KLEV)=1._JPRB-PEMIS(JLON)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+  ENDDO
 
   DO JLEV=KTDIA+1,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZZZFDC(JLON,JLEV)=0._JPRB
       ZZZFMC(JLON,JLEV-1)=0._JPRB
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRNUMX
 
@@ -2211,10 +1791,7 @@ CALL ACRANEB_SOLVT3(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 !     VIII.4 - COMPUTATION OF THE FINAL FLUXES.
 !-------------------------------------------------------------------------------
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRB(JLON)=ZZZTDC(JLON,KTDIA-1)-ZZZTMC(JLON,KTDIA-1)
   ZFRB(JLON)=ZZZFDC(JLON,KTDIA-1)-ZZZFMC(JLON,KTDIA-1)
 
@@ -2225,23 +1802,18 @@ do jlon=kidia,kfdia
 
   ZZTRTH(JLON,KTDIA-1)=0._JPRB
   ZZFRTH(JLON,KTDIA-1)=0._JPRB
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
   LLREWS=(JLEV==KLEV)
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRS(JLON)=ZTRB(JLON)
     ZFRS(JLON)=ZFRB(JLON)
-! removed hloop :   ENDDO
+  ENDDO
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRB(JLON)=ZZZTDC(JLON,JLEV)-ZZZTMC(JLON,JLEV)
     ZFRB(JLON)=ZZZFDC(JLON,JLEV)-ZZZFMC(JLON,JLEV)
 
@@ -2261,11 +1833,9 @@ DO JLEV=KTDIA,KLEV
      & -ZBB(JLON,JLEV-1))*(ZFRS(JLON)-ZFRB(JLON))
     ZFRTH(JLON,JLEV)=ZFRTH(JLON,JLEV)-(ZZTRTH(JLON,JLEV)&
      & +ZMIXP(JLON,JLEV)*(ZZFRTH(JLON,JLEV)-ZZTRTH(JLON,JLEV)))
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end kernels
 
 ! - TEMPORAIRE(S) 1D
 
@@ -2278,10 +1848,7 @@ enddo
 ! ZDRB      : FLUX NET A LA BASE "COOLING TO SPACE".
 !           : NET BOTTOM FLUX FOR COOLING TO SPACE.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRS(JLON)=ZTDC(JLON,KLEV)-ZTMC(JLON,KLEV)
   ZFRS(JLON)=ZFDC(JLON,KLEV)-ZFMC(JLON,KLEV)
   ZZTRS(JLON)=ZZTDC(JLON,KLEV)-ZZTMC(JLON,KLEV)+ZBB(JLON,KLEV)&
@@ -2301,25 +1868,20 @@ do jlon=kidia,kfdia
   ZZFRTH(JLON,KLEV)=ZDRS(JLON)+ZBB(JLON,KLEV)*ZFRS(JLON)-ZZFRS(JLON)
   PFRTH(JLON,KLEV)=ZZTRTH(JLON,KLEV)+ZMIXP(JLON,KLEV)&
    & *(ZZFRTH(JLON,KLEV)-ZZTRTH(JLON,KLEV))
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KLEV,KTDIA+1,-1
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRB(JLON)=ZTRS(JLON)
     ZFRB(JLON)=ZFRS(JLON)
     ZZTRB(JLON)=ZZTRS(JLON)
     ZZFRB(JLON)=ZZFRS(JLON)
     ZDRB(JLON)=ZDRS(JLON)
-! removed hloop :   ENDDO
+  ENDDO
 
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZTRS(JLON)=ZTDC(JLON,JLEV-1)-ZTMC(JLON,JLEV-1)
     ZFRS(JLON)=ZFDC(JLON,JLEV-1)-ZFMC(JLON,JLEV-1)
     ZZTRS(JLON)=ZZTDC(JLON,JLEV-1)-ZZTMC(JLON,JLEV-1)&
@@ -2343,29 +1905,19 @@ DO JLEV=KLEV,KTDIA+1,-1
      & +ZZFRB(JLON)-ZZFRS(JLON)
     PFRTH(JLON,JLEV-1)=ZZTRTH(JLON,JLEV-1)+ZMIXP(JLON,JLEV-1)&
      & *(ZZFRTH(JLON,JLEV-1)-ZZTRTH(JLON,JLEV-1))
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end kernels
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRB(JLON)=ZTRS(JLON)
   ZFRB(JLON)=ZFRS(JLON)
   ZZTRB(JLON)=ZZTRS(JLON)
   ZZFRB(JLON)=ZZFRS(JLON)
   ZDRB(JLON)=ZDRS(JLON)
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZTRS(JLON)=ZTDC(JLON,KTDIA-1)-ZTMC(JLON,KTDIA-1)
   ZFRS(JLON)=ZFDC(JLON,KTDIA-1)-ZFMC(JLON,KTDIA-1)
   ZZTRS(JLON)=ZZTDC(JLON,KTDIA-1)-ZZTMC(JLON,KTDIA-1)
@@ -2387,31 +1939,21 @@ do jlon=kidia,kfdia
    & +ZZFRB(JLON)-ZZFRS(JLON)
   PFRTH(JLON,KTDIA-1)=ZZTRTH(JLON,KTDIA-1)+ZMIXP(JLON,KTDIA-1)&
    & *(ZZFRTH(JLON,KTDIA-1)-ZZTRTH(JLON,KTDIA-1))
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+ENDDO
 
 DO JLEV=KTDIA-1,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRTH(JLON,JLEV)=PFRTH(JLON,JLEV)+ZFRTH(JLON,JLEV)
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! 'PROXIMITY CORRECTION' WITH THE INTERPOLATED EFFECT AS BASIS
 ! AND THE TIME-SECURED MAXIMUM EXCHANGE SITUATION AS TARGET.
 IF (LRPROX) THEN
 
 ! used to be unroll directive
-!$acc kernels
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA,KLEV-1
-! removed hloop :     DO JLON=KIDIA,KFDIA
+    DO JLON=KIDIA,KFDIA
       ZDEL1=-LOG(MAX(ZTRLI,ZLEPC(JLON,JLEV)))
       ZDEL2=-LOG(MAX(ZTRLI,ZLEPC(JLON,JLEV+1)))
       ZFTPP=1._JPRB
@@ -2446,19 +1988,14 @@ do jlon=kidia,kfdia
       ZTARE2=ZTARE2/(1._JPRB+(ZDAMP(JLON,JLEV)+ZDAMP(JLON,JLEV+1))*ZTARE2)
       PFRTH(JLON,JLEV)=PFRTH(JLON,JLEV)&
        & +(ZBB(JLON,JLEV-1)-ZBB(JLON,JLEV))*(ZTARE2-ZEFFE2)
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end kernels
 
 ENDIF ! LRPROX
 
 ! LRTPP correction for exchange between lowest model level and surface
 IF (LRTPP) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZDEL1=-LOG(MAX(ZTRLI,ZLEPC(JLON,KLEV)))
     ZEFFE2=(1._JPRB-ZLEPC(JLON,KLEV))*PEMIS(JLON)
     ZTARE2=2._JPRB*PEMIS(JLON)*((1._JPRB-ZLEPC(JLON,KLEV))&
@@ -2466,30 +2003,18 @@ do jlon=kidia,kfdia
     PFRTH(JLON,KLEV)=PFRTH(JLON,KLEV)&
      & +(ZBB(JLON,KLEV-1)-ZBB(JLON,KLEV))*(ZTARE2-ZEFFE2)&
      & /(1._JPRB+ZDAMP(JLON,KLEV)*ZEFFE2)
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 ENDIF
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA-1,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRTH(JLON,JLEV)=PFRTH(JLON,JLEV)+ZFLUXC(JLON,JLEV)
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   PFRTHDS(JLON)=ZBB(JLON,KLEV)+PFRTH(JLON,KLEV)/PEMIS(JLON)
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     IX - SOLAR COMPUTATIONS.
 !-------------------------------------------------------------------------------
@@ -2506,34 +2031,21 @@ enddo
 ! ZUSA      : "UPSCATTERED FRACTION" POUR LES AEROSOLS.
 !           : AEROSOLS' UPSCATTERED FRACTION.
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LLMASKS(JLON) ) THEN
     ZMU0I(JLON)=2._JPRB*ZDM0I(JLON)
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-
-!$acc kernels
-do jlon=kidia,kfdia
+ENDDO
 
 DO JLEV=1,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 	  ZEO3SA(JLON,JLEV)=0._JPRB
     ZEO4SA(JLON,JLEV)=0._JPRB
-! removed hloop : 	ENDDO
+	ENDDO
 ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JAE=1,6
   DO JLEV=KTDIA,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LLMASKS(JLON) ) THEN
         ZUSA=(0.5_JPRB+USAA(JAE)*ZMU0(JLON))/(1._JPRB+USBA*ZMU0(JLON))
         ZEO3SA(JLON,JLEV)=ZEO3SA(JLON,JLEV)+EODSA(JAE)*PDAER(JLON,JLEV,JAE)&
@@ -2541,20 +2053,15 @@ DO JAE=1,6
         ZEO4SA(JLON,JLEV)=ZEO4SA(JLON,JLEV)+EODSA(JAE)*PDAER(JLON,JLEV,JAE)&
          & *(1._JPRB-ZUSA)
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 !     IX.2 - COMPUTE SOLAR OPTICAL PROPERTIES.
 !-------------------------------------------------------------------------------
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZEO2SN(JLON,JLEV)=2._JPRB*ZBSFSN(JLON,JLEV)*ZEODSN(JLON,JLEV)
       ZEO2SI(JLON,JLEV)=2._JPRB*ZBSFSI(JLON,JLEV)*ZEODSI(JLON,JLEV)
@@ -2567,10 +2074,8 @@ DO JLEV=KTDIA,KLEV
       ZUSI(JLON,JLEV)=(0.5_JPRB+ZUSAI(JLON,JLEV)*ZMU0(JLON))&
        & /(1._JPRB+ZUSBI(JLON,JLEV)*ZMU0(JLON))
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 CALL ACRANEB_COEFS(YDML_PHY_MF%YRPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & PAPRSF,PDELP,ZQICE,ZQLI,ZDEOSI,ZEODSI,ZEODSN,&
@@ -2580,52 +2085,34 @@ CALL ACRANEB_COEFS(YDML_PHY_MF%YRPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N)
 
 ! atmospheric transmissions for clearsky direct fluxes at surface
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	ZTAUC  (JLON)=1._JPRB
 	ZTAUCUN(JLON)=1._JPRB
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
-!$acc kernels
-do jlon=kidia,kfdia
-
+ENDDO
 DO JLEV=KTDIA,KLEV
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       ZTAUC  (JLON)=ZTAUC  (JLON)*ZA1C  (JLON,JLEV)  ! delta-scaled
       ZTAUCUN(JLON)=ZTAUCUN(JLON)*ZA1CUN(JLON,JLEV)  ! delta-unscaled
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! set surface fluxes to zero for security of the night-time case
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   PFRSODS     (JLON)=0._JPRB
   PFRSOPS     (JLON)=0._JPRB
   ZFRSOPS_C   (JLON)=0._JPRB
   ZFRSOPS_CUN (JLON)=0._JPRB
   ZFRSOPS_TRUE(JLON)=0._JPRB
   ZFRSOPS_UN  (JLON)=0._JPRB
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     IX.3 - INCOMING SOLAR FLUXES AT UPPER BOUNDARY, CLEARSKY DIRECT
 !            FLUXES AT SURFACE FOR LRTRUEBBC OPTION.
 !-------------------------------------------------------------------------------
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LLMASKS(JLON) ) THEN
     ZFPC  (JLON,KTDIA-1)=ZII0(JLON)*ZMU0(JLON)*EXP(MAX(-0.5_JPRB&
      & *ZMU0I(JLON)*ZDEOSI(JLON,KTDIA-1),ZARGLI))
@@ -2639,9 +2126,7 @@ do jlon=kidia,kfdia
     ZFRSOPS_C  (JLON)=ZFPC(JLON,KTDIA-1)*ZTAUC  (JLON)
     ZFRSOPS_CUN(JLON)=ZFPC(JLON,KTDIA-1)*ZTAUCUN(JLON)
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     IX.4 - SOLVE DELTA-TWO STREAM ADDING SYSTEM FOR SOLAR FLUXES.
 !-------------------------------------------------------------------------------
@@ -2652,20 +2137,17 @@ CALL ACRANEB_SOLVS(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N,&
  & ZFDC,ZFMC,ZFPC,ZFPCUN,ZFDN,ZFMN,ZFPN,ZFPNUN)
 
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA-1,KLEV
 
   ! MISE A ZERO DES FLUX EN SECURITE POUR LE CAS NOCTURNE.
   ! SETTING FLUXES TO ZERO FOR SECURITY IN THE NIGHT-TIME CASE.
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRSO(JLON,JLEV)=0._JPRB
-! removed hloop :   ENDDO
+  ENDDO
 
   ! CALCUL EFFECTIF.
   ! ACTUAL COMPUTATION.
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       PFRSO(JLON,JLEV)=ZFPC(JLON,JLEV)+ZFDC(JLON,JLEV)-ZFMC(JLON,JLEV)
       IF (LRNUMX) THEN
@@ -2673,11 +2155,9 @@ DO JLEV=KTDIA-1,KLEV
          & +ZFDN(JLON,JLEV)-ZFMN(JLON,JLEV)
       ENDIF
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end kernels
 
 !     IX.5 - DIAGN. FLUX SOLAIRE PARALLELE ET DIFFUS VERS LE BAS EN SURFACE.
 !
@@ -2685,10 +2165,7 @@ enddo
 !-------------------------------------------------------------------------------
 
 ! direct solar fluxes (unscaled, clearsky scaled/unscaled and true)
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LLMASKS(JLON) ) THEN
     ZFRSOPS_UN(JLON)=ZFPCUN(JLON,KLEV)
     IF (LRNUMX) THEN
@@ -2697,15 +2174,10 @@ do jlon=kidia,kfdia
     ZFRSOPS_TRUE(JLON)=ZFRSOPS_UN(JLON)+(1._JPRB-PCLCT(JLON))* &
      & (ZFRSOPS_C(JLON)-ZFRSOPS_CUN(JLON))
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 ! direct and downward diffuse fluxes
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LLMASKS(JLON) ) THEN
     PFRSODS(JLON)=ZFDC(JLON,KLEV)
     PFRSOPS(JLON)=ZFPC(JLON,KLEV)
@@ -2714,41 +2186,26 @@ do jlon=kidia,kfdia
       PFRSOPS(JLON)=PFRSOPS(JLON)+ZFPN(JLON,KLEV)
     ENDIF
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 IF ( LRTRUEDIR ) THEN
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LLMASKS(JLON) ) THEN
       PFRSODS(JLON)=PFRSODS(JLON)+PFRSOPS(JLON)-ZFRSOPS_TRUE(JLON)
       PFRSOPS(JLON)=                            ZFRSOPS_TRUE(JLON)
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 ENDIF
 
 ! no flux divergence above KTDIA
-!$acc kernels
-do jlon=kidia,kfdia
-
 DO JLEV=0,KTDIA-2
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRSO(JLON,JLEV)=PFRSO(JLON,KTDIA-1)
     PFRTH(JLON,JLEV)=PFRTH(JLON,KTDIA-1)
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end kernels
 
 ! update sunshine duration
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   IF ( ZFRSOPS_C(JLON) > RSUNDUR*PMU0(JLON) ) THEN
     PSDUR(JLON)=PSDUR(JLON)+(1._JPRB-PCLCT(JLON))*TSTEP
   ENDIF
@@ -2756,9 +2213,7 @@ do jlon=kidia,kfdia
    & RSUNDUR*PMU0(JLON)*PCLCT(JLON) ) THEN
     PSDUR(JLON)=PSDUR(JLON)+PCLCT(JLON)*TSTEP
   ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end kernels
+ENDDO
 
 !     IX.6 - CALCUL DU FLUX LUNAIRE DESCENDANT EN SURFACE.
 !     ATTENTION: ON VEUT LE SEUL FLUX LUNAIRE,
@@ -2771,26 +2226,16 @@ enddo
 
 IF (LRAYLU) THEN
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRSOLU(JLON)=1._JPRB/(MAX(ZEPSAL,1._JPRB-PALB(JLON)))*PFRSO(JLON,KLEV)&
      & *0.5_JPRB*(1._JPRB+SIGN(1._JPRB,0._JPRB-PMU0(JLON)))
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ELSE
 
-!$acc kernels
-do jlon=kidia,kfdia
-
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     PFRSOLU(JLON)=0._JPRB
-! removed hloop :   ENDDO
-enddo
-!$acc end kernels
+  ENDDO
 
 ENDIF
 

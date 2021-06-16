@@ -205,76 +205,43 @@ LL_OZONE=.TRUE.
 ! -----
 
 ! safety - truncate specific humidity to interval [0, 1]
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZQ(JLON,JLEV)=MAX(0._JPRB,MIN(1._JPRB,PQ(JLON,JLEV)))
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 ! determine pressure for computations at model top
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZDELP(JLON)=MAX(ZEPSP,PAPRS(JLON,KTDIA-1))
   ZP   (JLON)=0.5_JPRB*ZDELP(JLON)
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! computation of doubled ozone quantity above starting layer KTDIA
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZNSOR(JLON)=2._JPRB*MAX(ZEPSP,PAPRS(JLON,0))*PQO3(JLON,0)
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-DO JLEV=1,KTDIA-1
-! removed hloop :   DO JLON=KIDIA,KFDIA
-    ZNSOR(JLON)=ZNSOR(JLON)+2._JPRB*PDELP(JLON,JLEV)*PQO3(JLON,JLEV)
-! removed hloop :   ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
+DO JLEV=1,KTDIA-1
+  DO JLON=KIDIA,KFDIA
+    ZNSOR(JLON)=ZNSOR(JLON)+2._JPRB*PDELP(JLON,JLEV)*PQO3(JLON,JLEV)
+  ENDDO
+ENDDO
 
 ! compute inverse air density
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZIRHOV(JLON,KTDIA-1)=(PR(JLON,KTDIA)*PT(JLON,KTDIA))/ZP(JLON)
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
-    ZIRHOV(JLON,JLEV)=(PR(JLON,JLEV)*PT(JLON,JLEV))/PAPRSF(JLON,JLEV)
-! removed hloop :   ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
+DO JLEV=KTDIA,KLEV
+  DO JLON=KIDIA,KFDIA
+    ZIRHOV(JLON,JLEV)=(PR(JLON,JLEV)*PT(JLON,JLEV))/PAPRSF(JLON,JLEV)
+  ENDDO
+ENDDO
 
 ! loop through gases
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JG=1,3
 
   ! computation of pressure/temperature factors for u_w, u_s
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZA=FGTS_A(JG,0)*(1._JPRB+FGTS_A(JG,1)*PT(JLON,KTDIA))/&
        &              (1._JPRB+FGTS_A(JG,2)*PT(JLON,KTDIA))
@@ -283,9 +250,9 @@ DO JG=1,3
       ZS_FW(JLON,KTDIA-1,JG)=ZA
       ZS_FS(JLON,KTDIA-1,JG)=(ZA*ZA/MAX(ZB,ZEPSU))*ZP(JLON)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
   DO JLEV=KTDIA,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LDMASKS(JLON) ) THEN
         ZA=FGTS_A(JG,0)*(1._JPRB+FGTS_A(JG,1)*PT(JLON,JLEV))/&
          &              (1._JPRB+FGTS_A(JG,2)*PT(JLON,JLEV))
@@ -294,51 +261,34 @@ DO JG=1,3
         ZS_FW(JLON,JLEV,JG)=ZA
         ZS_FS(JLON,JLEV,JG)=(ZA*ZA/MAX(ZB,ZEPSU))*PAPRSF(JLON,JLEV)
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
 
 ENDDO
-enddo
-!$acc end parallel loop
 
 ! initialize pressure/temperature factors for H2O e-type continuum
 IF ( FGTS_C(1) == 0._JPRB ) THEN
   ! daand: added explicit loops
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
   DO JLEV=KTDIA-1,KLEV
-! removed hloop : 	  DO JLON=KIDIA,KFDIA
+	  DO JLON=KIDIA,KFDIA
 		  ZS_FC(JLON,JLEV)=0._JPRB
-! removed hloop : 		ENDDO
+		ENDDO
 	ENDDO
-enddo
-!$acc end parallel loop
 ELSE
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZS_FC(JLON,KTDIA-1)=FGTS_C(1)*EXP(-FGTS_C(2)*PT(JLON,KTDIA))*&
        & ZP(JLON)
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
+  ENDDO
   DO JLEV=KTDIA,KLEV
-! removed hloop : 		DO JLON=KIDIA,KFDIA
+		DO JLON=KIDIA,KFDIA
 			!IF ( LDMASKS(JLON) ) THEN
         ZS_FC(JLON,JLEV)=FGTS_C(1)*EXP(-FGTS_C(2)*PT(JLON,JLEV))*&
          & PAPRSF(JLON,JLEV)
       !ENDIF
-! removed hloop :     ENDDO
+    ENDDO
   ENDDO
-enddo
-!$acc end parallel loop
 ENDIF
 
 ! -----
@@ -361,67 +311,42 @@ LL_DESC=.TRUE.
 ! in weak line limit) and inverse air density; absorber amount for H2O
 ! e-type continuum is multiplied by ratio e/p (water vapor pressure
 ! to total pressure)
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZDU(JLON,1)=2._JPRB*ZDELP(JLON)*ZQ   (JLON,KTDIA)
   ZDU(JLON,2)=2._JPRB*ZDELP(JLON)*PQCO2(JLON,KTDIA)*(1._JPRB-ZQ(JLON,KTDIA))
   ZDU(JLON,3)=                    ZNSOR(JLON)      *(1._JPRB-ZQ(JLON,KTDIA))
   ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,KTDIA)/(RD+(RV-RD)*ZQ(JLON,KTDIA))
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! initialize auxiliary quantities u_w, u_s, u_s_rho and u_c
 ! daand: added explicit loops
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JN=1,3
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		ZS_UW      (JLON,JN)=ZEPSU
 		ZS_US      (JLON,JN)=ZEPSU
 		ZS_US_IRHOV(JLON,JN)=ZEPSU
 		ZS_U       (JLON,JN)=ZEPSU
 		ZS_PU      (JLON,JN)=ZEPSU
 		ZS_TU      (JLON,JN)=ZEPSU
-! removed hloop : 	ENDDO
+	ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
   ZS_UC      (JLON)  =ZEPSU
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! compute total and incremental optical depths
 ! (solar incremental multiplied by 2.mu0)
 ! daand: a bit worried about PT and ZDEOSA being passed as scalars here ...
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 CALL DELTA_S(JLON,KTDIA-1,LL_DESC,ZP,PT(:,KTDIA),ZDU,&
  & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
  & ZDEOSA(:,KTDIA-1))
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+ENDDO
+DO JLON=KIDIA,KFDIA
 	!IF ( LDMASKS(JLON) ) THEN
     PDEOSI(JLON,KTDIA-1)=ZDEOSA(JLON,KTDIA-1)/PDM0I(JLON)
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! -----
 ! descending vertical loop
@@ -430,60 +355,50 @@ enddo
 ! ZEOSO     : "old" solar   optical depth (for computing "new" one)
 ! -----
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
 
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZEOSO(JLON)=ZDEOSA(JLON,JLEV-1)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
   ! compute unscaled absorber amounts 2.du
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZDU(JLON,1)=2._JPRB*PDELP(JLON,JLEV)*ZQ   (JLON,JLEV)
     ZDU(JLON,2)=2._JPRB*PDELP(JLON,JLEV)*PQCO2(JLON,JLEV)*&
      &          (1._JPRB-ZQ(JLON,JLEV))
     ZDU(JLON,3)=2._JPRB*PDELP(JLON,JLEV)*PQO3 (JLON,JLEV)*&
      &          (1._JPRB-ZQ(JLON,JLEV))
     ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,JLEV)/(RD+(RV-RD)*ZQ(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 
   ! compute total and incremental optical depths
   ! (solar incremental multiplied by 2.mu0)
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 	CALL DELTA_S(JLON,JLEV,LL_DESC,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
    & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
    & ZDEOSA(1,JLEV))
-! removed hloop : 	ENDDO
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	ENDDO
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       PDEOSI(JLON,JLEV)=&
        & MAX((ZDEOSA(JLON,JLEV)-ZEOSO(JLON))/PDM0I(JLON),0._JPRB)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end parallel loop
 
 ! -----
 ! surface condition
 ! -----
 
 ! solar depths computed from top to surface and up to given level
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LDMASKS(JLON) ) THEN
     ZEOSO(JLON)=ZDEOSA(JLON,KLEV)
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! -----
 ! ascending vertical loop
@@ -492,38 +407,33 @@ enddo
 ! use diffusivity factor in solar band instead of 1/mu0
 LL_DESC=.FALSE.
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KLEV,KTDIA,-1
 
   ! compute unscaled absorber amounts 2.du
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZDU(JLON,1)=2._JPRB*PDELP(JLON,JLEV)*ZQ   (JLON,JLEV)
     ZDU(JLON,2)=2._JPRB*PDELP(JLON,JLEV)*PQCO2(JLON,JLEV)*&
      &          (1._JPRB-ZQ(JLON,JLEV))
     ZDU(JLON,3)=2._JPRB*PDELP(JLON,JLEV)*PQO3 (JLON,JLEV)*&
      &          (1._JPRB-ZQ(JLON,JLEV))
     ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,JLEV)/(RD+(RV-RD)*ZQ(JLON,JLEV))
-! removed hloop :   ENDDO
+  ENDDO
 
   ! compute total and incremental optical depths
 	! daand: a bit worried about PT and ZUEOSA being passed as scalars here ...
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
 	CALL DELTA_S(JLON,JLEV,LL_DESC,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
    & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
    & ZUEOSA(1,JLEV))
-! removed hloop : 	ENDDO
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	ENDDO
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       PUEOSI(JLON,JLEV)=MAX(ZUEOSA(JLON,JLEV)-ZEOSO(JLON),0._JPRB)
       ZEOSO(JLON)      =ZUEOSA(JLON,JLEV)
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end parallel loop
 
 !$acc end data
 

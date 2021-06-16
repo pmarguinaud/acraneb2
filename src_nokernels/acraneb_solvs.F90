@@ -182,10 +182,7 @@ ASSOCIATE(LRNUMX=>YDPHY%LRNUMX, LRTRUEBBC=>YDPHY%LRTRUEBBC)
 !     I.1 - FIRST LAYER, ELIMINATION (EASY).
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : DO JLON=KIDIA,KFDIA
+DO JLON=KIDIA,KFDIA
 	!IF ( LDMASKS(JLON) ) THEN
     IF (LRNUMX) THEN
       ZAL1(JLON)=PB2(JLON,KTDIA)
@@ -239,19 +236,14 @@ do jlon=kidia,kfdia
     ENDIF
 
   !ENDIF
-! removed hloop : ENDDO
-enddo
-!$acc end parallel loop
+ENDDO
 
 ! I.2 - LOOP OVER THE LAYERS, PRELIMINARY COMPUTATIONS AND THEN ELIMINATION.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA+1,KLEV
 
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
 
       IF (LRNUMX) THEN
@@ -279,9 +271,9 @@ DO JLEV=KTDIA+1,KLEV
       ENDIF
 
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
 
       IF (LRNUMX) THEN
@@ -354,11 +346,9 @@ DO JLEV=KTDIA+1,KLEV
       ENDIF ! LRNUMX
 
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 
 ENDDO
-enddo
-!$acc end parallel loop
 
 ! I.3 - SURFACE TREATMENT, ELIMINATION AND BACK-SUBSTITUTION.
 !-------------------------------------------------------------------------------
@@ -368,10 +358,7 @@ enddo
 
 IF ( LRTRUEBBC ) THEN
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZAL      =PALB   (JLON)
       ZALP     =PALBDIR(JLON)
@@ -389,16 +376,11 @@ do jlon=kidia,kfdia
         PFMC(JLON,KLEV)=PFMC(JLON,KLEV)+ZTUS1*PFMN(JLON,KLEV)
       ENDIF
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end parallel loop
+  ENDDO
 
 ELSE
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       ZAL =PALB   (JLON)
       ZALP=PALBDIR(JLON)
@@ -413,9 +395,7 @@ do jlon=kidia,kfdia
         PFMC(JLON,KLEV)=PFMC(JLON,KLEV)+ZTUS1*PFMN(JLON,KLEV)
       ENDIF
     !ENDIF
-! removed hloop :   ENDDO
-enddo
-!$acc end parallel loop
+  ENDDO
 
 ENDIF
 
@@ -423,11 +403,8 @@ ENDIF
 !-------------------------------------------------------------------------------
 
 !cdir unroll=8
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KLEV,KTDIA,-1
-! removed hloop : 	DO JLON=KIDIA,KFDIA
+	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
 
       IF (LRNUMX) THEN
@@ -448,10 +425,8 @@ DO JLEV=KLEV,KTDIA,-1
       ENDIF
 
     !ENDIF
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 !$acc end data
 

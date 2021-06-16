@@ -101,11 +101,8 @@ IF (LHOOK) CALL DR_HOOK('ACRANEB_COEFT',0,ZHOOK_HANDLE)
 ZARGLI=-250._JPRB
 ZTRLI =EXP(ZARGLI)
 
-!$acc parallel loop gang vector
-do jlon=kidia,kfdia
-
 DO JLEV=KTDIA,KLEV
-! removed hloop :   DO JLON=KIDIA,KFDIA
+  DO JLON=KIDIA,KFDIA
     ZEO1=PEOPT(JLON,JLEV)+PEO1TA(JLON,JLEV)
     ZEO2=PEO2TA(JLON,JLEV)
     ZEPS=SQRT(ZEO1*ZEO1-ZEO2*ZEO2)
@@ -126,10 +123,8 @@ DO JLEV=KTDIA,KLEV
      & /(1._JPRB-(ZRHO*ZRHO)*(ZTAU*ZTAU)+ZTRLI)
     PA5N(JLON,JLEV)=ZRHO*(1._JPRB-(ZTAU*ZTAU))&
      & /(1._JPRB-(ZRHO*ZRHO)*(ZTAU*ZTAU)+ZTRLI)
-! removed hloop :   ENDDO
+  ENDDO
 ENDDO
-enddo
-!$acc end parallel loop
 
 !$acc end data
 
