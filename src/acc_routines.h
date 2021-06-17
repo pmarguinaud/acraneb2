@@ -1,0 +1,9 @@
+!$acc routine(ACRANEB2) vector
+!$acc routine(ACRANEB_TRANST) vector
+!$acc routine(ACRANEB_TRANSS) vector
+!$acc routine(ACRANEB_COEFT) vector
+!$acc routine(ACRANEB_COEFS) vector
+!$acc routine(ACRANEB_SOLVT) vector
+!$acc routine(ACRANEB_SOLVT3) vector
+!$acc routine(ACRANEB_SOLVS) vector
+!$acc routine(AC_CLOUD_MODEL2) vector
