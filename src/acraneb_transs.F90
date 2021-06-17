@@ -7,6 +7,8 @@ SUBROUTINE ACRANEB_TRANSS(YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LDMASKS,&
 ! - OUTPUT 2D
  & PDEOSI,PUEOSI)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB_TRANSS - Computation of solar gaseous optical depths.
@@ -139,7 +141,7 @@ LOGICAL :: LL_DESC,LL_OZONE
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS',0,ZHOOK_HANDLE)
 !ASSOCIATE(FGTS_DELTA0=>YDPHY3%FGTS_DELTA0, FGTS_OC=>YDPHY3%FGTS_OC, &
 ! & FGTS_OB=>YDPHY3%FGTS_OB, FGTS_OA=>YDPHY3%FGTS_OA, FGTS_OD=>YDPHY3%FGTS_OD, &
 ! & FGTS_P00=>YDPHY3%FGTS_P00, FGTS_Q=>YDPHY3%FGTS_Q, FGTS_P=>YDPHY3%FGTS_P, &
@@ -163,13 +165,6 @@ IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS',0,ZHOOK_HANDLE)
 #define LVOIGT      YDPHY%LVOIGT
 #define LVFULL      YDPHY%LVFULL
 #define LRPROX      YDPHY%LRPROX
-
-!$acc data &
-!$acc& present(YDPHY,YDPHY3,PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3) &
-!$acc& present(PDM0I,PDEOSI,PUEOSI,LDMASKS) &
-!$acc& create(ZS_RHOZ0V,ZDELP ,ZEOSO ,ZNSOR ,ZP ,ZDU ,ZS_U ,ZS_PU ,ZS_TU , &
-!$acc&   ZS_UW ,ZS_US ,ZS_US_IRHOV ,ZS_UC ,ZQ ,ZIRHOV ,ZDEOSA ,ZUEOSA , &
-!$acc&   ZS_FW , ZS_FS, ZS_FC, ZMD_W, ZMD_S, ZDELTA, ZZA, ZAR, ZCOEF, ZTAU )
 
 ! -----
 ! security constants, derived parameters for Voigt effect and
@@ -207,7 +202,7 @@ LL_OZONE=.TRUE.
 ! -----
 
 ! safety - truncate specific humidity to interval [0, 1]
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -216,10 +211,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! determine pressure for computations at model top
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -227,18 +222,18 @@ do jlon=kidia,kfdia
   ZP   (JLON)=0.5_JPRB*ZDELP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! computation of doubled ozone quantity above starting layer KTDIA
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZNSOR(JLON)=2._JPRB*MAX(ZEPSP,PAPRS(JLON,0))*PQO3(JLON,0)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=1,KTDIA-1
@@ -247,18 +242,18 @@ DO JLEV=1,KTDIA-1
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute inverse air density
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZIRHOV(JLON,KTDIA-1)=(PR(JLON,KTDIA)*PT(JLON,KTDIA))/ZP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -267,10 +262,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! loop through gases
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JG=1,3
@@ -301,12 +296,12 @@ DO JG=1,3
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! initialize pressure/temperature factors for H2O e-type continuum
 IF ( FGTS_C(1) == 0._JPRB ) THEN
   ! daand: added explicit loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -315,9 +310,9 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ELSE
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -327,8 +322,8 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -340,7 +335,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 ! -----
@@ -363,7 +358,7 @@ LL_DESC=.TRUE.
 ! in weak line limit) and inverse air density; absorber amount for H2O
 ! e-type continuum is multiplied by ratio e/p (water vapor pressure
 ! to total pressure)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -373,11 +368,11 @@ do jlon=kidia,kfdia
   ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,KTDIA)/(RD+(RV-RD)*ZQ(JLON,KTDIA))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! initialize auxiliary quantities u_w, u_s, u_s_rho and u_c
 ! daand: added explicit loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JN=1,3
@@ -391,20 +386,20 @@ DO JN=1,3
 ! removed hloop : 	ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZS_UC      (JLON)  =ZEPSU
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute total and incremental optical depths
 ! (solar incremental multiplied by 2.mu0)
 ! daand: a bit worried about PT and ZDEOSA being passed as scalars here ...
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -413,8 +408,8 @@ CALL DELTA_S(JLON,KTDIA-1,LL_DESC,ZP,PT(:,KTDIA),ZDU,&
  & ZDEOSA(:,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -423,7 +418,7 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! descending vertical loop
@@ -432,7 +427,7 @@ enddo
 ! ZEOSO     : "old" solar   optical depth (for computing "new" one)
 ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -469,14 +464,14 @@ DO JLEV=KTDIA,KLEV
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! surface condition
 ! -----
 
 ! solar depths computed from top to surface and up to given level
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -485,7 +480,7 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! ascending vertical loop
@@ -494,7 +489,7 @@ enddo
 ! use diffusivity factor in solar band instead of 1/mu0
 LL_DESC=.FALSE.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA,-1
@@ -525,12 +520,10 @@ DO JLEV=KLEV,KTDIA,-1
 
 ENDDO
 enddo
-!$acc end parallel loop
-
-!$acc end data
+!$acc end loop
 
 !END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS',1,ZHOOK_HANDLE)
 
 ! -----
 ! private procedures
@@ -570,7 +563,7 @@ REAL(KIND=JPRB) :: ZAUX,ZLOG,ZP_AVG,ZT_AVG
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS:DELTA_S',0,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS:DELTA_S',0,ZHOOK_HANDLE)
 !ASSOCIATE(FGTS_DELTA0=>YDPHY3%FGTS_DELTA0, FGTS_OC=>YDPHY3%FGTS_OC, &
 ! & FGTS_OB=>YDPHY3%FGTS_OB, FGTS_OA=>YDPHY3%FGTS_OA, FGTS_OD=>YDPHY3%FGTS_OD, &
 ! & FGTS_P00=>YDPHY3%FGTS_P00, FGTS_Q=>YDPHY3%FGTS_Q, FGTS_P=>YDPHY3%FGTS_P, &
@@ -776,7 +769,7 @@ ELSE
 ENDIF
 
 !END ASSOCIATE
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS:DELTA_S',1,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANSS:DELTA_S',1,ZHOOK_HANDLE)
 
 END SUBROUTINE DELTA_S
 

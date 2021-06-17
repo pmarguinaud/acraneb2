@@ -5,6 +5,8 @@ SUBROUTINE ACRANEB_COEFT (KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! - OUTPUT 2D
  & PA4C,PA5C,PA4N,PA5N)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB_COEFT - Computes coeficients for delta-two stream adding
@@ -91,17 +93,13 @@ INTEGER(KIND=JPIM) :: JLEV,JLON
 
 !-----------------------------------------------------------------------
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_COEFT',0,ZHOOK_HANDLE)
-
-!$acc data &
-!$acc&  present( PDELP,PEOPT,PEO1TI,PEO2TI,PEO1TN,PEO2TN,PQICE,PQLI,PEO1TA,PEO2TA,&
-!$acc&    PA4C,PA5C,PA4N,PA5N)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_COEFT',0,ZHOOK_HANDLE)
 
 ! security constants
 ZARGLI=-250._JPRB
 ZTRLI =EXP(ZARGLI)
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -129,9 +127,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc end data
-
-IF (LHOOK) CALL DR_HOOK('ACRANEB_COEFT',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_COEFT',1,ZHOOK_HANDLE)
 END SUBROUTINE ACRANEB_COEFT

@@ -68,6 +68,9 @@ READ (KLUN) RALPD
 READ (KLUN) RBETD
 READ (KLUN) RGAMD
 READ (KLUN) RSNAN
+
+!$acc update device(rg,rsigma,rpi,rday,rd,rv)
+
 END SUBROUTINE
 
 

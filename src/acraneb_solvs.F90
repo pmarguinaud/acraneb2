@@ -8,6 +8,8 @@ SUBROUTINE ACRANEB_SOLVS(YDPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,LDMASKS,&
  & PA1C,PA1CUN,PA2C,PA3C,PA4C,PA5C,PA1N,PA1NUN,PA2N,PA3N,PA4N,PA5N,&
  & PFDC,PFMC,PFPC,PFPCUN,PFDN,PFMN,PFPN,PFPNUN)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB_SOLVS - Adding system solver (solar band).
@@ -145,16 +147,8 @@ REAL(KIND=JPRB) :: ZTU1(KLON,KLEV),ZTU2(KLON,KLEV),ZTU3(KLON,KLEV),&
 !     LOCAL INTEGER SCALARS
 INTEGER(KIND=JPIM) :: JLEV, JLON, JN
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVS',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVS',0,ZHOOK_HANDLE)
 ASSOCIATE(LRNUMX=>YDPHY%LRNUMX, LRTRUEBBC=>YDPHY%LRTRUEBBC)
-
-!$acc data &
-!$acc& present(YDPHY,LDMASKS,&
-!$acc& PALB,PALBDIR,PCLCT,PFRSOPS_C,PFRSOPS_CUN,&
-!$acc& PNEB,PB1,PB2,PB3,PB4,&
-!$acc& PA1C,PA1CUN,PA2C,PA3C,PA4C,PA5C,PA1N,PA1NUN,PA2N,PA3N,PA4N,PA5N,&
-!$acc& PFDC,PFMC,PFPC,PFPCUN,PFDN,PFMN,PFPN,PFPNUN ) &
-!$acc& create(ZAL1 ,ZAL2 ,ZBE1 ,ZBE2 ,ZDE1 ,ZDE2 ,ZGA1 ,ZGA2 ,ZTU1 ,ZTU2 ,ZTU3 ,ZTU4 ,ZTU5 ,ZTU6 ,ZTU7 ,ZTU8 ,ZTU9 )
 
 ! - TEMPORAIRE(S) 1D
 
@@ -182,7 +176,7 @@ ASSOCIATE(LRNUMX=>YDPHY%LRNUMX, LRTRUEBBC=>YDPHY%LRTRUEBBC)
 !     I.1 - FIRST LAYER, ELIMINATION (EASY).
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -241,12 +235,12 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! I.2 - LOOP OVER THE LAYERS, PRELIMINARY COMPUTATIONS AND THEN ELIMINATION.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA+1,KLEV
@@ -358,7 +352,7 @@ DO JLEV=KTDIA+1,KLEV
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! I.3 - SURFACE TREATMENT, ELIMINATION AND BACK-SUBSTITUTION.
 !-------------------------------------------------------------------------------
@@ -368,7 +362,7 @@ enddo
 
 IF ( LRTRUEBBC ) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -391,11 +385,11 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -415,7 +409,7 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -423,7 +417,7 @@ ENDIF
 !-------------------------------------------------------------------------------
 
 !cdir unroll=8
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA,-1
@@ -451,10 +445,8 @@ DO JLEV=KLEV,KTDIA,-1
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-
-!$acc end data
+!$acc end loop
 
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVS',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVS',1,ZHOOK_HANDLE)
 END SUBROUTINE ACRANEB_SOLVS

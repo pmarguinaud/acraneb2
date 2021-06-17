@@ -9,6 +9,8 @@ SUBROUTINE ACRANEB_SOLVT3(YDPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & PF2DC,PF2MC,PF2DN,PF2MN,&
  & PF3DC,PF3MC,PF3DN,PF3MN)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB_SOLVT - Adding system solver (thermal band, 3 RHS).
@@ -121,18 +123,8 @@ REAL(KIND=JPRB) :: ZTU1(KLON,KLEV),ZTU2(KLON,KLEV),ZTU3(KLON,KLEV),&
 !     LOCAL INTEGER SCALARS
 INTEGER(KIND=JPIM) :: JLEV, JLON
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT3',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT3',0,ZHOOK_HANDLE)
 ASSOCIATE(LRNUMX=>YDPHY%LRNUMX)
-
-!$acc data &
-!$acc& present(YDPHY,PEMIS,&
-!$acc& PNEB,PB1,PB2,PB3,PB4,&
-!$acc& PA4C,PA5C,PA4N,PA5N,&
-!$acc& PF1DC,PF1MC,PF1DN,PF1MN,&
-!$acc& PF2DC,PF2MC,PF2DN,PF2MN,&
-!$acc& PF3DC,PF3MC,PF3DN,PF3MN) &
-!$acc& create(ZAL1 ,ZAL2 ,ZBE1 ,ZBE2 ,ZDE1 ,ZDE2 ,ZGA1 ,ZGA2 ,ZTU1 ,ZTU2 ,ZTU3 ,ZTU4 ,ZTU5 ,ZTU6 ,ZTU7 ,ZTU8 ,ZTU9 )
-
 
 ! - TEMPORAIRE(S) 1D
 
@@ -160,7 +152,7 @@ ASSOCIATE(LRNUMX=>YDPHY%LRNUMX)
 ! I.1 - FIRST LAYER, ELIMINATION (EASY).
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -181,9 +173,9 @@ do jlon=kidia,kfdia
   ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -241,12 +233,12 @@ do jlon=kidia,kfdia
 
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! I.2 - LOOP OVER THE LAYERS, PRELIMINARY COMPUTATIONS AND THEN ELIMINATION.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA+1,KLEV
@@ -361,7 +353,7 @@ DO JLEV=KTDIA+1,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! I.3 - SURFACE TREATMENT, ELIMINATION AND BACK-SUBSTITUTION.
 !-------------------------------------------------------------------------------
@@ -369,7 +361,7 @@ enddo
 ! TODO: INCLUDE EMISIVITY IN ZAC(N)3 & ZAC(N)5 ARRAYS, THIS REQUIRES TO 
 !       INCREASE DIMENSION OF ZAC(N) TO 0:KLEV
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -402,13 +394,13 @@ do jlon=kidia,kfdia
 
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! I.4 - BACK-SUBSTITUTION LAYER BY LAYER.
 !-------------------------------------------------------------------------------
 
 !cdir unroll=8
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA,-1
@@ -460,10 +452,8 @@ DO JLEV=KLEV,KTDIA,-1
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-
-!$acc end data
+!$acc end loop
 
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT3',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_SOLVT3',1,ZHOOK_HANDLE)
 END SUBROUTINE ACRANEB_SOLVT3

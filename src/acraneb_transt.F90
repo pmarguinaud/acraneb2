@@ -7,6 +7,8 @@ SUBROUTINE ACRANEB_TRANST(YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LDAUTO,&
  & PDEOTI,PDEOTI2,PUEOTI,PUEOTI2,&
  & PEOLT,PEOXT,PPNER0,PPNER1,PRPROX,PRSURF)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB_TRANST - Computation of thermal gaseous optical depths.
@@ -178,7 +180,7 @@ INTEGER(KIND=JPIM) :: JG,JLEV,JLEV1,JLEV2,JLON,ILEV
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST',0,ZHOOK_HANDLE)
 !ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
 ! & FGTC_D=>YDPHY3%FGTC_D, FGTT_OA=>YDPHY3%FGTT_OA, FGTC_A=>YDPHY3%FGTC_A, &
 ! & FGTC_C=>YDPHY3%FGTC_C, FGTC_B=>YDPHY3%FGTC_B, FGTC_P00=>YDPHY3%FGTC_P00, &
@@ -222,16 +224,6 @@ IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST',0,ZHOOK_HANDLE)
 #define LVFULL YDPHY%LVFULL
 #define LRPROX YDPHY%LRPROX
 
-!$acc data &
-!$acc& present(YDPHY,YDPHY3,PAPRS,PAPRSF,PDELP,PR,PT,PTS,PQ,PQCO2,PQO3) &
-!$acc& present(PDEOTI,PDEOTI2,PUEOTI,PUEOTI2,PEOLT,PEOXT,PPNER0,PPNER1,PRPROX,PRSURF) &
-!$acc& create(ZT_RHOZ0V ,ZDELP ,ZEOTO ,ZNSOR ,ZP ,ZDU ,ZC_U ,ZC_PU ,ZC_TU ,ZC_UW ,&
-!$acc&   ZC_US ,ZC_US_IRHOV ,ZC_UC ,ZT_U ,ZT_PU ,ZT_TU ,ZT_UW ,ZT_US ,ZT_US_IRHOV ,&
-!$acc&   ZT_UC ,ZQ ,ZIRHOV ,ZDEOTA0 ,ZDEOTA1 ,ZDEOTA2 ,ZUEOTA0 ,ZUEOTA1 ,ZUEOTA2 ,&
-!$acc&   ZC_FW ,ZC_FS ,ZC_FC ,ZT_FW ,ZT_FS ,ZT_FC ,ZDEL0 ,ZDEL1 ,ZDEL1D ,ZTAU ,ZTAU0A ,&
-!$acc&   ZTAU1A ,ZTAU0B ,ZTAU1B ,ZTAU0 ,ZTAU1) &
-!$acc& create(ZDELTA,ZZA,ZAR,ZCOEF,ZZTAU)
-
 ! -----
 ! security constants, derived parameters for Voigt effect and
 ! Malkmus formula
@@ -265,7 +257,7 @@ ZMD=0.5_JPRB*EXP(0.5_JPRB)
 ! -----
 
 ! safety - truncate specific humidity to interval [0, 1]
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -274,10 +266,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! determine pressure for computations at model top
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -285,18 +277,18 @@ do jlon=kidia,kfdia
   ZP   (JLON)=0.5_JPRB*ZDELP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! computation of doubled ozone quantity above starting layer KTDIA
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZNSOR(JLON)=2._JPRB*MAX(ZEPSP,PAPRS(JLON,0))*PQO3(JLON,0)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=1,KTDIA-1
@@ -305,18 +297,18 @@ DO JLEV=1,KTDIA-1
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute inverse air density
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZIRHOV(JLON,KTDIA-1)=(PR(JLON,KTDIA)*PT(JLON,KTDIA))/ZP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -325,10 +317,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! loop through gases
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JG=1,3
@@ -367,10 +359,10 @@ DO JG=1,3
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! initialize pressure/temperature factors for H2O e-type continuum
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -378,8 +370,8 @@ do jlon=kidia,kfdia
    & ZP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -389,8 +381,8 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -398,8 +390,8 @@ do jlon=kidia,kfdia
    & ZP(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -409,7 +401,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! computation of gaseous optical depths:
@@ -428,7 +420,7 @@ enddo
 ! in weak line limit) and inverse air density; absorber amount for H2O
 ! e-type continuum is multiplied by ratio e/p (water vapor pressure
 ! to total pressure)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -438,11 +430,11 @@ do jlon=kidia,kfdia
   ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,KTDIA)/(RD+(RV-RD)*ZQ(JLON,KTDIA))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! initialize auxiliary quantities u_w, u_s, u_s_rho and u_c
 ! daand: added explicit loops here
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JG=1,3
@@ -462,8 +454,8 @@ DO JG=1,3
 ! removed hloop : 	ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -471,11 +463,11 @@ do jlon=kidia,kfdia
 	ZT_UC      (JLON)  =ZEPSU
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute total and incremental optical depths
 ! daand: a bit worried about PT and ZDEOTA0/ZDEOTA1 being passed as scalars here ...
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -484,8 +476,8 @@ CALL DELTA_C(JLON,KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZDEOTA0(1,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -494,15 +486,15 @@ CALL DELTA_T(JLON,KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZDEOTA1(1,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   PDEOTI(JLON,KTDIA-1)=ZDEOTA1(JLON,KTDIA-1)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! descending vertical loop
@@ -511,7 +503,7 @@ enddo
 ! ZEOTO     : "old" thermal optical depth (for computing "new" one)
 ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -543,13 +535,13 @@ DO JLEV=KTDIA,KLEV
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! temperature correction for CTS
 ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -561,8 +553,8 @@ do jlon=kidia,kfdia
   PDEOTI2(JLON,KTDIA-1)=ZDEOTA2(JLON,KTDIA-1)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -579,7 +571,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! surface condition
@@ -587,7 +579,7 @@ enddo
 
 ! thermal depths computed from surface up to given level
 ! daand: added explicit loops here
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JG=1,3
@@ -607,8 +599,8 @@ DO JG=1,3
 ! removed hloop : 	ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -617,14 +609,14 @@ do jlon=kidia,kfdia
 	ZT_UC      (JLON)  =ZEPSU
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 
 ! -----
 ! ascending vertical loop
 ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA,-1
@@ -658,14 +650,14 @@ DO JLEV=KLEV,KTDIA,-1
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! model top (arbitrarily small pressure value for thermal EBL computations)
 ! -----
 
 ! compute unscaled absorber amounts 2.du
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -675,11 +667,11 @@ do jlon=kidia,kfdia
   ZDU(JLON,4)=ZDU(JLON,1)*RV*ZQ(JLON,KTDIA)/(RD+(RV-RD)*ZQ(JLON,KTDIA))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute total and incremental optical depths
 ! daand: a bit worried about PT and ZUEOTA0/ZUEOTA1 being passed as scalars here ...
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -688,8 +680,8 @@ CALL DELTA_C(JLON,KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZUEOTA0(1,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -698,8 +690,8 @@ CALL DELTA_T(JLON,KTDIA-1,ZP,PT(1,KTDIA),ZDU,&
  & ZUEOTA1(1,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -707,13 +699,13 @@ do jlon=kidia,kfdia
    & MAX(ZUEOTA1(JLON,KTDIA-1)-ZUEOTA1(JLON,KTDIA),0._JPRB)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! -----
 ! temperature correction for EWS
 ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -723,8 +715,8 @@ do jlon=kidia,kfdia
   ZUEOTA2(JLON,KLEV+1)=0._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA-1,-1
@@ -745,7 +737,7 @@ DO JLEV=KLEV,KTDIA-1,-1
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 IF ( .NOT.LDAUTO ) THEN
 
@@ -753,7 +745,7 @@ IF ( .NOT.LDAUTO ) THEN
   ! local transmissions and optical depths for single and double layers
   ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA-1,KLEV-1  ! initial half level
@@ -833,14 +825,14 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! -----
   ! top to surface gaseous transmissions
   ! -----
  
 	! daand: added explicit loops here
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JG=1,3
@@ -860,8 +852,8 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -869,9 +861,9 @@ do jlon=kidia,kfdia
 		ZT_UC      (JLON)  =ZEPSU
 ! removed hloop : 	ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -900,10 +892,10 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! convert top to surface optical depths to transmissions
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -911,7 +903,7 @@ do jlon=kidia,kfdia
     ZTAU1(JLON,KTDIA-1,KLEV)=EXP(MAX(-ZDEL1(JLON),ZARGLI))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
@@ -920,7 +912,7 @@ ELSE
   ! gaseous absorption only
   ! -----
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA-1,KLEV    ! initial half level
@@ -996,10 +988,10 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! compute quantities needed for T_e corrected EBL, resp. EBL-EAL flux
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA,KLEV      ! exchanging layer 1
@@ -1020,7 +1012,7 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -1032,7 +1024,7 @@ ENDIF
 IF ( LRPROX ) THEN
 
   ! compute maximum optical depths for EBL-EAL
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1042,8 +1034,8 @@ do jlon=kidia,kfdia
     PEOXT(JLON,KLEV   )=ZDEL1D(JLON,KLEV -1)-PEOLT(JLON,KLEV   )
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+2,KLEV-2
@@ -1053,11 +1045,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! compute correction factor for tau12 /= tau1.tau2
   ! daand: added explicit loops here
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JLEV=0,KLEV
@@ -1066,8 +1058,8 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV-1
@@ -1085,12 +1077,12 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
   ! fill maximum optical depths for EBL with local values
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1099,7 +1091,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -1109,16 +1101,16 @@ ENDIF
 
 ! add T_e corrected optical depths
 ! daand: added explicit loops here
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
 	PRSURF(JLON)=0._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -1127,10 +1119,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute corrective ratio for KTDIA-1 to KLEV transmission
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -1140,13 +1132,11 @@ do jlon=kidia,kfdia
    &    EXP(MAX(-PRSURF(JLON),ZARGLI))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !END ASSOCIATE
 
-!$acc end data
-
-IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST',1,ZHOOK_HANDLE)
 
 ! -----
 ! private procedures
@@ -1183,7 +1173,7 @@ REAL(KIND=JPRB) :: ZAUX,ZLOG,ZP_AVG,ZT_AVG
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_C',0,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_C',0,ZHOOK_HANDLE)
 !ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
 ! & FGTC_D=>YDPHY3%FGTC_D, FGTT_OA=>YDPHY3%FGTT_OA, FGTC_A=>YDPHY3%FGTC_A, &
 ! & FGTC_C=>YDPHY3%FGTC_C, FGTC_B=>YDPHY3%FGTC_B, FGTC_P00=>YDPHY3%FGTC_P00, &
@@ -1317,7 +1307,7 @@ ENDDO
 !ENDDO
 
 !END ASSOCIATE
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_C',1,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_C',1,ZHOOK_HANDLE)
 
 END SUBROUTINE DELTA_C
 
@@ -1350,7 +1340,7 @@ REAL(KIND=JPRB) :: ZAUX,ZLOG,ZP_AVG,ZT_AVG
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_T',0,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_T',0,ZHOOK_HANDLE)
 !ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
 ! & FGTC_D=>YDPHY3%FGTC_D, FGTT_OA=>YDPHY3%FGTT_OA, FGTC_A=>YDPHY3%FGTC_A, &
 ! & FGTC_C=>YDPHY3%FGTC_C, FGTC_B=>YDPHY3%FGTC_B, FGTC_P00=>YDPHY3%FGTC_P00, &
@@ -1483,7 +1473,7 @@ ENDDO
 !ENDDO
 
 !END ASSOCIATE
-!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_T',1,ZHOOK_HANDLE)
+!!!IF (LHOOK) CALL DR_HOOK('ACRANEB_TRANST:DELTA_T',1,ZHOOK_HANDLE)
 
 END SUBROUTINE DELTA_T
 

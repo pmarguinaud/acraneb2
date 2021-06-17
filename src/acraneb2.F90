@@ -17,6 +17,8 @@ SUBROUTINE ACRANEB2( &
 ! - INPUT 2D x 6
  & PDAER)
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   ACRANEB2 - Computes radiative fluxes and associated surface diagnostics.
@@ -289,7 +291,7 @@ REAL(KIND=JPRB) :: ZARGLI,ZTRLI,ZEARRT,ZDEBL,ZW,&
 #include "acraneb_solvt3.intfb.h"
 
 !-------------------------------------------------------------------------------
-IF (LHOOK) CALL DR_HOOK('ACRANEB2',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB2',0,ZHOOK_HANDLE)
 
 ASSOCIATE(TSPHY=>YDML_PHY_MF%YRPHY2%TSPHY, &
  & EOATA=>YDML_PHY_MF%YRPHY3%EOATA, USAA=>YDML_PHY_MF%YRPHY3%USAA, EODTA=>YDML_PHY_MF%YRPHY3%EODTA, &
@@ -306,35 +308,6 @@ ASSOCIATE(TSPHY=>YDML_PHY_MF%YRPHY2%TSPHY, &
  & RCOVSR=>YDRIP%RCOVSR, RSIVSR=>YDRIP%RSIVSR, TSTEP=>YDRIP%TSTEP, &
  & NSTOP=>YDRIP%NSTOP, RSUNDUR=>YDERDI%RSUNDUR)
  
- 
-!$acc data &
-!$acc&   copyin( YDERDI,YDRIP,YDML_PHY_MF, &
-!$acc&     PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
-!$acc&     PALB,PALBDIR,PEMIS,PGELAM,PGEMU,PMU0,PMU0LU,PTS,PDECRD,PCLCT, &
-!$acc&     PDAER) &
-!$acc&   copy(PGDEOSI,PGUEOSI,PGMU0,PGMU0_MIN,PGMU0_MAX, &
-!$acc&     PGDEOTI,PGDEOTI2,PGUEOTI,PGUEOTI2,PGEOLT,PGEOXT, &
-!$acc&     PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR) &
-!$acc&   copyout(PFRSO,PFRTH, &
-!$acc&     PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS) &
-!$acc&   create(ZBB, ZFDC, ZFDN, ZFMC, ZFMN, ZFPC, ZFPCUN, ZFPN, ZFPNUN, ZZFDC, ZZFDN, &
-!$acc&     ZZFMC, ZZFMN, ZB1, ZB2, ZB3, ZB4, ZA1C, ZA1CUN, ZA2C, ZA3C, ZA4C, ZA5C, &
-!$acc&     ZA1N, ZA1NUN, ZA2N, ZA3N, ZA4N, ZA5N, ZQLI, ZQICE, ZFRTH, ZZFRTH, ZZZFDC, &
-!$acc&     ZZZFDN, ZZZFMC, ZZZFMN, ZGEPC, ZLEPC, ZXEPC, ZDA4G, ZDA4L, ZDA4X, ZDAMP, &
-!$acc&     ZTDC, ZTDN, ZTMC, ZTMN, ZZTDC, ZZTDN, ZZTMC, ZZTMN, ZZZTDC, ZZZTDN, &
-!$acc&     ZZZTMC, ZZZTMN, ZZTRTH, ZDRB, ZDRS, ZFLUXE, ZNMNB, ZNMNH, ZNMXB, ZNMXH, &
-!$acc&     ZII0, ZMU0, ZMU00, ZMU0I, ZDM0I, ZDM0I_MIN, ZDM0I_MAX, ZWEIGHT, ZRSURF, &
-!$acc&     ZTRB, ZTRS, ZZTRB, ZZTRS, ZFRB, ZFRS, ZZFRB, ZZFRS, ZCOLAT, ZCOLON, &
-!$acc&     ZSILON, ZTAUC, ZTAUCUN, ZFRSOPS_TRUE, ZFRSOPS_UN, ZFRSOPS_C, ZFRSOPS_CUN, &
-!$acc&     ZPNER0, ZPNER1, ZFLUXD, ZFLUXL, ZFLUXR, ZFLUXC, ZRPROX, ZMIXP, ZTAUD, &
-!$acc&     ZTAUL, ZTAU, ZBSFSI, ZBSFSN, ZBSFTI, ZBSFTN, ZEO1TI, ZEO1TN, ZEO2TI, &
-!$acc&     ZEO2TN, ZEOASI, ZEOASN, ZEOATI, ZEOATN, ZEODSI, ZEODSN, ZEODTI, ZEODTN, &
-!$acc&     ZUSAI, ZUSAN, ZUSBI, ZUSBN, ZEO2SN, ZEO2SI, ZEO1SN, ZEO1SI, ZEOSN, &
-!$acc&     ZEOSNUN, ZEOSI, ZEOSIDIR, ZUSN, ZUSI, ZEOSA, ZEOSADIR, ZEO1SA, ZEO2SA, &
-!$acc&     ZEO3SA, ZEO4SA, ZEO1TA, ZEO2TA, ZDEOSA, ZDEOSI, ZUEOSI, ZDEOTI, ZDEOTI2, &
-!$acc&     ZUEOTI, ZUEOTI2, ZEOLT, ZEOXT, ZEOTI, LLMASKS)
-
-
 !     I - CALCUL DES PARAMETRES DERIVES, CONSTANTES DE SECURITE (POUR
 !     L'EPAISSEUR EN PRESSION DE LA COUCHE "AU DESSUS DU SOMMET DU
 !     MODELE", L'HUMIDITE SPECIFIQUE ET LA CORRECTION POUR EVITER UNE
@@ -399,7 +372,7 @@ ENDIF
 !     COMPUTE AEROSOL OPTICAL PROPERTIES.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -409,11 +382,11 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! ALPHA1, ALPHA2 FOR AEROSOLS.
 ! daand: add loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -427,8 +400,8 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop : 	ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JAE=1,6
@@ -452,7 +425,7 @@ DO JAE=1,6
   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     II.2 - CALCULS SOLAIRES ET LUNAIRES.
 !     LORSQUE LE SOLEIL EST LEVE, ZMU0 ET ZII0 SONT CEUX DU SOLEIL.
@@ -465,7 +438,7 @@ enddo
 
 ! detemine mu_0 and its min/max values within intermittency window
 IF ( ICALS == 1 ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -476,12 +449,12 @@ do jlon=kidia,kfdia
     ZCOLAT(JLON)=SQRT(1.0_JPRB-PGEMU(JLON)**2)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
   ZCOVSR=RCOVSR
   ZSIVSR=RSIVSR
   ZCODT =COS(2._JPRB*RPI*TSTEP/RDAY)
   ZSIDT =SIN(2._JPRB*RPI*TSTEP/RDAY)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JSTEP=0,MIN(NSORAYFR-1,NSTOP-KSTEP)
@@ -500,13 +473,13 @@ do jlon=kidia,kfdia
     ZCOVSR    =ZCOVSR_NEW
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 IF (LRAYLU) THEN
 
   ! get current solar/lunar mu0 and intensity (lunar when sun is down)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -515,12 +488,12 @@ do jlon=kidia,kfdia
     ZII0(JLON)=ZSOLLEV*RII0+(1._JPRB-ZSOLLEV)*RIP0LU
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSEIF ( ICALS == 0 ) THEN
 
   ! get current solar mu0 and intensity
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -528,13 +501,13 @@ do jlon=kidia,kfdia
     ZII0(JLON)=RII0
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
   ! get precalculated mu0 from global storage and current intensity
   ISTEP=MOD(KSTEP,NSORAYFR)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -542,7 +515,7 @@ do jlon=kidia,kfdia
     ZII0(JLON)=RII0
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -557,7 +530,7 @@ ENDIF
 ! compute 1/(2.mu_0')
 ZEARRT=EARRT*(EARRT+2._JPRB)
 ZIEART=1._JPRB/EARRT
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -565,7 +538,7 @@ do jlon=kidia,kfdia
    & ZEARRT)-ZMU0(JLON))*ZIEART
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     II.4 - CALCUL DES LIMITES JOUR/NUIT.
 
@@ -578,45 +551,45 @@ IF (.NOT.LRAYPL.OR.(NPHYREP /= 0 .AND. NPHYREP /= -4)) THEN
 	
   ! PAS DE CALCUL DE "PLAGES" SOLAIRES.
   ! NO "DAYLIGHT" INTERVALS COMPUTATION.
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
 	  LLMASKS(JLON)=.TRUE.
 ! removed hloop : 	ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
   IF ( ICALS == 0 ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :     DO JLON=KIDIA,KFDIA
       ZMU00(JLON)=ZMU0(JLON)
 ! removed hloop :     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
   ELSE
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :     DO JLON=KIDIA,KFDIA
       ZMU00(JLON)=PGMU0_MAX(JLON)
 ! removed hloop :     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
   ENDIF
 	
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
 	  LLMASKS(JLON) = ZMU00(KIDIA) > 0._JPRB
 ! removed hloop : 	ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -652,7 +625,7 @@ ENDIF
 
 ! determine min/max 1/(2.mu_0')
 IF ( ICALS > 0 ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -664,7 +637,7 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 ! compute optical depths
@@ -683,7 +656,7 @@ ELSEIF ( ICALS == 1 ) THEN
    & KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
    & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MIN,&
    & ZDEOSI,ZUEOSI)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -695,14 +668,14 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! compute log of optical depths for max 1/(2.mu_0') alias min sun elevation
   CALL ACRANEB_TRANSS(YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
    & KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
    & PAPRS,PAPRSF,PDELP,PR,PT,PQ,PQCO2,PQO3,ZDM0I_MAX,&
    & ZDEOSI,ZUEOSI)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -714,7 +687,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -722,7 +695,7 @@ ENDIF
 IF ( ICALS > 0 ) THEN
 
   ! precompute interpolation weights
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -732,10 +705,10 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! interpolation with respect to 1/(2.mu_0') in log-log scale
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -749,7 +722,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -767,15 +740,15 @@ IF ( ICALT > 0 ) THEN
   IF ( NTHRAYFR /= 1 ) THEN
 
     ! full timestep within intermittency => store necessary arrays
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :     DO JLON=KIDIA,KFDIA
       PGRSURF(JLON)=ZRSURF(JLON)
 ! removed hloop :     ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA,KLEV
@@ -789,8 +762,8 @@ do jlon=kidia,kfdia
       ENDIF
     ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA-1,KLEV
@@ -807,22 +780,22 @@ do jlon=kidia,kfdia
       ENDIF
     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ENDIF
 
 ELSE
 
   ! partial timestep within intermittency => read necessary arrays
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
     ZRSURF(JLON)=PGRSURF(JLON)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -836,8 +809,8 @@ do jlon=kidia,kfdia
     ENDIF
   ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -854,12 +827,12 @@ do jlon=kidia,kfdia
     ENDIF
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
 ! compute minimum optical depth
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA-1,KLEV
@@ -868,10 +841,10 @@ DO JLEV=KTDIA-1,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! compute total solar descending optical depths
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -880,8 +853,8 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -892,7 +865,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! call cloud model to compute saturated cloud optical properties
 CALL AC_CLOUD_MODEL2( YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
@@ -906,7 +879,7 @@ CALL AC_CLOUD_MODEL2( YDML_PHY_MF%YRPHY,YDML_PHY_MF%YRPHY3, &
  & )
 
 ! ALPHA1, ALPHA2 FOR ICE/LIQUID (THERMAL BAND).
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -918,7 +891,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IV - CALCUL DES ELEMENTS DE GEOMETRIE NUAGEUSE. LES TERMES ZB
 !     SERVENT DE STOCKAGE TEMPORAIRE POUR LES "ALPHA", "BETA", "GAMMA"
@@ -971,7 +944,7 @@ IF (LRNUMX) THEN
 
   ! MAXIMUM-RANDOM OVERLAPS
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -983,10 +956,10 @@ do jlon=kidia,kfdia
     ZB3(JLON,KTDIA+1)=ZNMNB(JLON)/PNEB(JLON,KTDIA)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -1004,9 +977,9 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1018,12 +991,12 @@ do jlon=kidia,kfdia
     ZB4(JLON,KLEV)=1._JPRB
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! relax maximum-random overlaps towards random overlaps according to
   ! Shonk decorrelation length
   IF (LRNUEXP) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA+1,KLEV
@@ -1035,8 +1008,8 @@ do jlon=kidia,kfdia
 ! removed hloop :       ENDDO
     ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA,KLEV-1
@@ -1048,14 +1021,14 @@ do jlon=kidia,kfdia
 ! removed hloop :       ENDDO
     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
   ENDIF
 
 ELSE
 
   ! RANDOM OVERLAPS
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1064,7 +1037,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -1090,7 +1063,7 @@ ENDIF ! LRNUMX
 !     FLUX DE CORPS NOIR.
 !     BLACK-BODY FLUX.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -1106,16 +1079,16 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   ZBB(JLON,KLEV)=RSIGMA*(PTS(JLON)*PTS(JLON))*(PTS(JLON)*PTS(JLON))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     V.2 - COMPUTATION OF EBL FLUXES AND BRACKETING WEIGHTS.
 !-------------------------------------------------------------------------------
@@ -1124,7 +1097,7 @@ enddo
 IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
   ! distant and local layer transmissions
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1134,10 +1107,10 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! distant 'grey' transmissions for each pair of levels (multiplicative)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA-1,KLEV      ! initial half level
@@ -1151,12 +1124,12 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! EBL flux for 'grey' minimum optical depths
   ! (zfluxd positive downwards, D - distant)
   ! daand: add explicit loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JLEV=0,KLEV
@@ -1165,8 +1138,8 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
@@ -1189,10 +1162,10 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ! local 'grey' transmissions for each pair of levels (multiplicative)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA-1,KLEV      ! initial half level
@@ -1206,12 +1179,12 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
  
   ! EBL flux for 'grey' maximum optical depths
   ! (ZFLUXL positive downwards, L - local)
   ! daand: add explicit loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JLEV=0,KLEV
@@ -1220,8 +1193,8 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
@@ -1244,7 +1217,7 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -1252,7 +1225,7 @@ ENDIF
 IF ( NRAUTOEV == 0.AND.ICALT == 1 ) THEN
 
   ! statistically fitted EBL flux
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1260,8 +1233,8 @@ do jlon=kidia,kfdia
     ZFLUXR(JLON,KLEV   )=0._JPRB
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV-1
@@ -1273,14 +1246,14 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSEIF ( ICALT == 2 ) THEN
 
   ! true EBL flux
   ! (ZFLUXR positive downwards, R - real)
   ! daand: add explicit loops
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JLEV=0,KLEV
@@ -1289,8 +1262,8 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV1=KTDIA,KLEV        ! exchanging layer 1
@@ -1316,14 +1289,14 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
 ! computation of bracketing weights (with smoothing) and offset
 IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA-1,KLEV
@@ -1341,7 +1314,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -1352,7 +1325,7 @@ IF (NTHRAYFR /= 1.OR.NRAUTOEV > 1) THEN
   IF ( (NRAUTOEV == 0.AND.ICALT == 1).OR.ICALT == 2 ) THEN
 
     ! timestep with update of bracketing weights => store PGMIXP, PGFLUXC
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA-1,KLEV
@@ -1362,12 +1335,12 @@ do jlon=kidia,kfdia
 ! removed hloop :       ENDDO
     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ELSE
 
     ! timestep without update of bracketing weights => read PGMIXP, PGFLUXC
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA-1,KLEV
@@ -1377,7 +1350,7 @@ do jlon=kidia,kfdia
 ! removed hloop :       ENDDO
     ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
   ENDIF
 
@@ -1446,7 +1419,7 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 !     FOR IDEALIZED PROFILE A.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -1458,9 +1431,9 @@ do jlon=kidia,kfdia
   ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -1474,7 +1447,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     VI.3 - SOLVE THE ADDING METHOD LINEAR SYSTEM BY GAUSSIAN
 !     ELIMINATION BACK-SUBSTITUTION.
@@ -1494,7 +1467,7 @@ CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! ZTRB      : FLUX "Z" NET A LA BASE D'UNE COUCHE.
 !           : "Z" NET FLUX AT THE BOTTOM OF A LAYER.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -1509,10 +1482,10 @@ do jlon=kidia,kfdia
   PFRTH(JLON,KLEV)=-ZBB(JLON,KLEV)*MIN(1._JPRB,ZTRS(JLON)*ZRSURF(JLON))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA,-1
@@ -1540,7 +1513,7 @@ DO JLEV=KLEV,KTDIA,-1
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     VII - CALCUL DES FLUX AVEC L'HYPOTHESE "EXCHANGE WITH SURFACE".
 
@@ -1562,7 +1535,7 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 
 IF (LRNUMX) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1584,9 +1557,9 @@ do jlon=kidia,kfdia
     ZFMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -1598,11 +1571,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1616,9 +1589,9 @@ do jlon=kidia,kfdia
     ZFMC(JLON,KLEV   )=1._JPRB-PEMIS(JLON)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -1628,7 +1601,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -1650,7 +1623,7 @@ CALL ACRANEB_SOLVT(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! ZTRB      : FLUX "Z" NET A LA BASE D'UNE COUCHE.
 !           : "Z" NET FLUX AT THE BOTTOM OF A LAYER.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -1665,10 +1638,10 @@ do jlon=kidia,kfdia
   ZFRTH(JLON,KTDIA-1)=0._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -1696,7 +1669,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     VIII - CALCUL DES COMPLEMENTS AU FLUX DU CORPS NOIR DES FLUX
 !     THERMIQUES 'ANTI-SURESTIMATION' POUR LE PROFIL DE TEMPERATURE REEL
@@ -1722,7 +1695,7 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 
 ! GLOBAL STORAGE FOR THE 'PROXIMITY' COMPUTATION.
 IF (LRPROX) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1733,7 +1706,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 !     VIII.2 - PREPARE RIGHT-HAND SIDES OF ADDING METHOD LINEAR SYSTEM
@@ -1744,7 +1717,7 @@ ENDIF
 
 ! RIGHT-HAND SIDE FOR PROFILE A.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -1756,9 +1729,9 @@ do jlon=kidia,kfdia
   ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -1772,13 +1745,13 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! RIGHT-HAND SIDE FOR PROFILE B.
 
 IF (LRNUMX) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1799,9 +1772,9 @@ do jlon=kidia,kfdia
     ZZZTMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -1813,11 +1786,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1831,9 +1804,9 @@ do jlon=kidia,kfdia
     ZZZTMC(JLON,KLEV)=1._JPRB-PEMIS(JLON)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -1843,7 +1816,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -1851,7 +1824,7 @@ ENDIF ! LRNUMX
 
 IF (LRNUMX) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1874,9 +1847,9 @@ do jlon=kidia,kfdia
      & *(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV
@@ -1898,11 +1871,11 @@ do jlon=kidia,kfdia
 ! removed hloop :    ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -1914,9 +1887,9 @@ do jlon=kidia,kfdia
     ZZTMC(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV
@@ -1932,7 +1905,7 @@ do jlon=kidia,kfdia
 ! removed hloop :    ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -1959,7 +1932,7 @@ IF (LRPROX) THEN
    & PDELP,ZEOLT,ZEO1TI,ZEO2TI,ZEO1TN,ZEO2TN,ZQICE,&
    & ZQLI,ZEO1TA,ZEO2TA,ZA4C,ZA5C,ZA4N,ZA5N)
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1970,7 +1943,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
@@ -1981,7 +1954,7 @@ CALL ACRANEB_COEFT(KIDIA,KFDIA,KLON,KTDIA,KLEV,&
  & ZQLI,ZEO1TA,ZEO2TA,ZA4C,ZA5C,ZA4N,ZA5N)
 
 IF ( LRPROX ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -1992,9 +1965,9 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ELSEIF ( LRTPP ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2002,12 +1975,12 @@ do jlon=kidia,kfdia
      & +PNEB(JLON,KLEV)*ZA4N(JLON,KLEV)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 ! RHS FOR PROFILE A
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2019,9 +1992,9 @@ do jlon=kidia,kfdia
   ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -2035,13 +2008,13 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! RHS FOR PROFILE C
 
 IF (LRNUMX) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2064,9 +2037,9 @@ do jlon=kidia,kfdia
      & *(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV
@@ -2088,11 +2061,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2104,9 +2077,9 @@ do jlon=kidia,kfdia
     ZZFMC(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*(ZBB(JLON,KLEV)-ZBB(JLON,KLEV-1))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV
@@ -2122,7 +2095,7 @@ do jlon=kidia,kfdia
 ! removed hloop :    ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -2130,7 +2103,7 @@ ENDIF ! LRNUMX
 
 IF (LRNUMX) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2152,9 +2125,9 @@ do jlon=kidia,kfdia
     ZZZFMN(JLON,KLEV)=(1._JPRB-PEMIS(JLON))*PNEB(JLON,KLEV)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -2166,11 +2139,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2184,9 +2157,9 @@ do jlon=kidia,kfdia
     ZZZFMC(JLON,KLEV)=1._JPRB-PEMIS(JLON)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA+1,KLEV-1
@@ -2196,7 +2169,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRNUMX
 
@@ -2212,7 +2185,7 @@ CALL ACRANEB_SOLVT3(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 !     VIII.4 - COMPUTATION OF THE FINAL FLUXES.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2228,10 +2201,10 @@ do jlon=kidia,kfdia
   ZZFRTH(JLON,KTDIA-1)=0._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -2266,7 +2239,7 @@ DO JLEV=KTDIA,KLEV
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! - TEMPORAIRE(S) 1D
 
@@ -2279,7 +2252,7 @@ enddo
 ! ZDRB      : FLUX NET A LA BASE "COOLING TO SPACE".
 !           : NET BOTTOM FLUX FOR COOLING TO SPACE.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2304,10 +2277,10 @@ do jlon=kidia,kfdia
    & *(ZZFRTH(JLON,KLEV)-ZZTRTH(JLON,KLEV))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KLEV,KTDIA+1,-1
@@ -2348,9 +2321,9 @@ DO JLEV=KLEV,KTDIA+1,-1
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2361,9 +2334,9 @@ do jlon=kidia,kfdia
   ZDRB(JLON)=ZDRS(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2390,9 +2363,9 @@ do jlon=kidia,kfdia
    & *(ZZFRTH(JLON,KTDIA-1)-ZZTRTH(JLON,KTDIA-1))
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA-1,KLEV
@@ -2401,14 +2374,14 @@ DO JLEV=KTDIA-1,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! 'PROXIMITY CORRECTION' WITH THE INTERPOLATED EFFECT AS BASIS
 ! AND THE TIME-SECURED MAXIMUM EXCHANGE SITUATION AS TARGET.
 IF (LRPROX) THEN
 
 ! used to be unroll directive
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV-1
@@ -2450,13 +2423,13 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF ! LRPROX
 
 ! LRTPP correction for exchange between lowest model level and surface
 IF (LRTPP) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2469,10 +2442,10 @@ do jlon=kidia,kfdia
      & /(1._JPRB+ZDAMP(JLON,KLEV)*ZEFFE2)
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA-1,KLEV
@@ -2481,16 +2454,16 @@ DO JLEV=KTDIA-1,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
   PFRTHDS(JLON)=ZBB(JLON,KLEV)+PFRTH(JLON,KLEV)/PEMIS(JLON)
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX - SOLAR COMPUTATIONS.
 !-------------------------------------------------------------------------------
@@ -2507,7 +2480,7 @@ enddo
 ! ZUSA      : "UPSCATTERED FRACTION" POUR LES AEROSOLS.
 !           : AEROSOLS' UPSCATTERED FRACTION.
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2516,9 +2489,9 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=1,KLEV
@@ -2528,8 +2501,8 @@ DO JLEV=1,KLEV
 ! removed hloop : 	ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JAE=1,6
@@ -2546,12 +2519,12 @@ DO JAE=1,6
   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX.2 - COMPUTE SOLAR OPTICAL PROPERTIES.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -2571,7 +2544,7 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 CALL ACRANEB_COEFS(YDML_PHY_MF%YRPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & PAPRSF,PDELP,ZQICE,ZQLI,ZDEOSI,ZEODSI,ZEODSN,&
@@ -2581,7 +2554,7 @@ CALL ACRANEB_COEFS(YDML_PHY_MF%YRPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N)
 
 ! atmospheric transmissions for clearsky direct fluxes at surface
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2589,8 +2562,8 @@ do jlon=kidia,kfdia
 	ZTAUCUN(JLON)=1._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
-!$acc parallel loop gang vector
+!$acc end loop
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -2602,10 +2575,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! set surface fluxes to zero for security of the night-time case
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2617,13 +2590,13 @@ do jlon=kidia,kfdia
   ZFRSOPS_UN  (JLON)=0._JPRB
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX.3 - INCOMING SOLAR FLUXES AT UPPER BOUNDARY, CLEARSKY DIRECT
 !            FLUXES AT SURFACE FOR LRTRUEBBC OPTION.
 !-------------------------------------------------------------------------------
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2642,7 +2615,7 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX.4 - SOLVE DELTA-TWO STREAM ADDING SYSTEM FOR SOLAR FLUXES.
 !-------------------------------------------------------------------------------
@@ -2653,7 +2626,7 @@ CALL ACRANEB_SOLVS(YDML_PHY_MF%YRPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,LLMASKS,&
  & ZA1C,ZA1CUN,ZA2C,ZA3C,ZA4C,ZA5C,ZA1N,ZA1NUN,ZA2N,ZA3N,ZA4N,ZA5N,&
  & ZFDC,ZFMC,ZFPC,ZFPCUN,ZFDN,ZFMN,ZFPN,ZFPNUN)
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA-1,KLEV
@@ -2678,7 +2651,7 @@ DO JLEV=KTDIA-1,KLEV
 
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX.5 - DIAGN. FLUX SOLAIRE PARALLELE ET DIFFUS VERS LE BAS EN SURFACE.
 !
@@ -2686,7 +2659,7 @@ enddo
 !-------------------------------------------------------------------------------
 
 ! direct solar fluxes (unscaled, clearsky scaled/unscaled and true)
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2700,10 +2673,10 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! direct and downward diffuse fluxes
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2717,9 +2690,9 @@ do jlon=kidia,kfdia
   !ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 IF ( LRTRUEDIR ) THEN
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 	DO JLON=KIDIA,KFDIA
@@ -2729,11 +2702,11 @@ do jlon=kidia,kfdia
     !ENDIF
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 ENDIF
 
 ! no flux divergence above KTDIA
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=0,KTDIA-2
@@ -2743,10 +2716,10 @@ DO JLEV=0,KTDIA-2
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ! update sunshine duration
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : DO JLON=KIDIA,KFDIA
@@ -2759,7 +2732,7 @@ do jlon=kidia,kfdia
   ENDIF
 ! removed hloop : ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 !     IX.6 - CALCUL DU FLUX LUNAIRE DESCENDANT EN SURFACE.
 !     ATTENTION: ON VEUT LE SEUL FLUX LUNAIRE,
@@ -2772,7 +2745,7 @@ enddo
 
 IF (LRAYLU) THEN
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
@@ -2780,26 +2753,23 @@ do jlon=kidia,kfdia
      & *0.5_JPRB*(1._JPRB+SIGN(1._JPRB,0._JPRB-PMU0(JLON)))
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ELSE
 
-!$acc parallel loop gang vector
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop :   DO JLON=KIDIA,KFDIA
     PFRSOLU(JLON)=0._JPRB
 ! removed hloop :   ENDDO
 enddo
-!$acc end parallel loop
+!$acc end loop
 
 ENDIF
 
-!$acc end data
-
 !-------------------------------------------------------------------------------
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('ACRANEB2',1,ZHOOK_HANDLE)
-
+!!IF (LHOOK) CALL DR_HOOK('ACRANEB2',1,ZHOOK_HANDLE)
 
 END SUBROUTINE ACRANEB2

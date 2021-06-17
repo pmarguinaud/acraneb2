@@ -148,5 +148,7 @@ CHARACTER(LEN=8), PARAMETER :: CSNAN = &
   & CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(0)//CHAR(244)//CHAR(127)
 REAL(KIND=JPRB) :: RSNAN
 
+!$acc declare create(rg,rsigma,rpi,rday,rd,rv)
+
 !    ------------------------------------------------------------------
 END MODULE YOMCST

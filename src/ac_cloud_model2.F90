@@ -8,6 +8,8 @@ SUBROUTINE AC_CLOUD_MODEL2(                          &
  & PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL     &
  & )
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   AC_CLOUD_MODEL2 - Computes cloud optical coefficients taking into
@@ -166,7 +168,7 @@ LOGICAL :: LLQI(KLON,KLEV),LLQL(KLON,KLEV)
 LOGICAL :: LLMASKS(KLON)
 
 !-------------------------------------------------------------------------------
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',0,ZHOOK_HANDLE)
 ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
  & FCM_P_DL=>YDPHY3%FCM_P_DL, FCM_P_DI=>YDPHY3%FCM_P_DI, FCM_AI=>YDPHY3%FCM_AI, &
  & FCM_Q_GI=>YDPHY3%FCM_Q_GI, FCM_B_BI=>YDPHY3%FCM_B_BI, FCM_AL=>YDPHY3%FCM_AL, &
@@ -190,17 +192,6 @@ ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
  & LCLSATUR=>YDPHY%LCLSATUR)
 !-------------------------------------------------------------------------------
 
-!$acc data &
-!$acc& present(YDPHY,YDPHY3,PDELP    ,&
-!$acc&   PNEB     ,PQI      ,PQL      ,PR       ,PAPRSF   ,&
-!$acc&   PT       ,PDEOSA   ,PBSFSI   ,PBSFSL   ,PBSFTI   ,&
-!$acc&   PBSFTL   ,PEOASI   ,PEOASL   ,PEOATI   ,PEOATL   ,&
-!$acc&   PEODSI   ,PEODSL   ,PEODTI   ,PEODTL   ,PEOSIDIR ,&
-!$acc&   PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL, LDMASKS ) &
-!$acc& create(ZIWC ,ZLWC ,ZDEL0_EFFA ,ZDEL0_EFFD ,ZDE1 ,ZRE1 ,ZDEL0 ,ZEOAI ,&
-!$acc&   ZEOAL ,ZEODI ,ZEODL ,ZGI ,ZGL, LLQL, LLQI, LLMASKS )
-
-
 ! 1. Computation of cloud optical properties
 ! ------------------------------------------
 
@@ -213,7 +204,7 @@ IF ( .NOT.LCLSATUR ) THEN
   ! into account.
 
   ! fill arrays with namelist values
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -246,7 +237,7 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
 ELSE
 
@@ -264,7 +255,7 @@ ELSE
 
   ! logical keys for skipping points without cloud liquid/ice
   ! daand: add explicit loops
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
 	DO JLEV=1,KLEV
@@ -274,13 +265,13 @@ do jlon=kidia,kfdia
 ! removed hloop : 		ENDDO
 	ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! 1.2.1 Convert IWC/LWC to D_e/R_e
   ! --------------------------------
 
   ! determine IWC/LWC [g/m^3]
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -291,10 +282,10 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! determine D_e/R_e [micron] and scale it for fitting
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JB=1,N_SPBAND
@@ -325,14 +316,14 @@ do jlon=kidia,kfdia
     ENDDO
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! 1.2.2 Unsaturated cloud optical properties
   ! ------------------------------------------
 
   ! initialize arrays for the case of no clouds
   ! daand: add explicit loops
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JB=1,N_SPBAND
@@ -348,7 +339,7 @@ do jlon=kidia,kfdia
 		ENDDO
 	ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 	
   ! loop through spectral bands
 !$thor start ignore
@@ -357,23 +348,23 @@ enddo
 
     ! differentiate between solar/thermal bounds
     IF ( JB == 1 ) THEN
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 		  DO JLON=KIDIA,KFDIA
 			  LLMASKS(JLON)=LDMASKS(JLON)
 ! removed hloop : 			ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
     ELSE
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
 ! removed hloop : 		  DO JLON=KIDIA,KFDIA
 			  LLMASKS(JLON)=.TRUE.
 ! removed hloop : 			ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
     ENDIF
 
     ! Pade approximants for scaled k_abs, k_scat and g
@@ -384,7 +375,7 @@ enddo
     CALL FIT1(ZDE1(1,1,JB),FCM_P_GI(JB,:),FCM_Q_GI(JB,:),ZGI  (1,1,JB))
     CALL FIT1(ZRE1(1,1,JB),FCM_P_GL(JB,:),FCM_Q_GL(JB,:),ZGL  (1,1,JB))
 
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
     DO JLEV=KTDIA,KLEV
@@ -415,7 +406,7 @@ do jlon=kidia,kfdia
 ! removed hloop :       ENDDO
     ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! end of loop through spectral bands
 !$thor start ignore
@@ -429,7 +420,7 @@ enddo
   JB=1
 
   ! loop through levels
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -516,14 +507,14 @@ do jlon=kidia,kfdia
   ! end of loop through levels
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! 1.2.4 Fill output arrays
   ! ------------------------
 
   ! solar band
   JB=1
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -553,11 +544,11 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
   ! thermal band
   JB=2
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
   DO JLEV=KTDIA,KLEV
@@ -571,14 +562,12 @@ do jlon=kidia,kfdia
 ! removed hloop :     ENDDO
   ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
 ENDIF
 
-!$acc end data
-
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',1,ZHOOK_HANDLE)
 
 ! ------------------------------------------------------------------------------
 
@@ -613,7 +602,7 @@ REAL(KIND=JPRB) :: ZSIZE,ZP,ZQ
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
 !ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
 ! & FCM_P_DL=>YDPHY3%FCM_P_DL, FCM_P_DI=>YDPHY3%FCM_P_DI, FCM_AI=>YDPHY3%FCM_AI, &
 ! & FCM_Q_GI=>YDPHY3%FCM_Q_GI, FCM_B_BI=>YDPHY3%FCM_B_BI, FCM_AL=>YDPHY3%FCM_AL, &
@@ -636,7 +625,7 @@ IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
 ! & FCM_MU_AI=>YDPHY3%FCM_MU_AI, FCM_MU_AL=>YDPHY3%FCM_MU_AL, &
 ! & LCLSATUR=>YDPHY%LCLSATUR)
 
-!$acc kernels
+!$acc loop vector
 do jlon=kidia,kfdia
 
 DO JLEV=KTDIA,KLEV
@@ -650,10 +639,10 @@ DO JLEV=KTDIA,KLEV
 ! removed hloop :   ENDDO
 ENDDO
 enddo
-!$acc end kernels
+!$acc end loop
 
 !END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',1,ZHOOK_HANDLE)
 
 END SUBROUTINE FIT1
 

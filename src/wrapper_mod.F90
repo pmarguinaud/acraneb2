@@ -4,6 +4,8 @@ CONTAINS
 
 SUBROUTINE WRAPPER(KLON,KLEV,KGPBLK,KCOUNT,LCHECK)
 
+#include "acc_routines.h"
+
 USE MODEL_PHYSICS_MF_MOD , ONLY : MODEL_PHYSICS_MF_TYPE
 USE PARKIND1 ,ONLY : JPIM     ,JPRB
 
@@ -98,6 +100,18 @@ ts=omp_get_wtime()
 
 DO JCOUNT=1,KCOUNT
 
+!$acc data &
+!$acc&   copyin( YDERDI,YDRIP,YDML_PHY_MF, &
+!$acc&     PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
+!$acc&     PALB,PALBDIR,PEMIS,PGELAM,PGEMU,PMU0,PMU0LU,PTS,PDECRD,PCLCT, &
+!$acc&     PDAER) &
+!$acc&   copy(PGDEOSI,PGUEOSI,PGMU0,PGMU0_MIN,PGMU0_MAX, &
+!$acc&     PGDEOTI,PGDEOTI2,PGUEOTI,PGUEOTI2,PGEOLT,PGEOXT, &
+!$acc&     PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR) &
+!$acc&   copyout(PFRSO,PFRTH, &
+!$acc&     PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
+
+	!$acc parallel loop gang
 	DO JBLK=1,KGPBLK
 
 			CALL ACRANEB2( &
@@ -120,7 +134,9 @@ DO JCOUNT=1,KCOUNT
 			 & PDAER(:,:,:,JBLK))
 
 	ENDDO
+	!$acc end parallel loop
 
+!$acc end data
 ENDDO
 
 te=omp_get_wtime()

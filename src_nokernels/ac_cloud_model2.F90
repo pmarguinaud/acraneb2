@@ -8,6 +8,8 @@ SUBROUTINE AC_CLOUD_MODEL2(                          &
  & PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL     &
  & )
 
+#include "acc_routines.h"
+
 ! Purpose:
 ! --------
 !   AC_CLOUD_MODEL2 - Computes cloud optical coefficients taking into
@@ -166,7 +168,7 @@ LOGICAL :: LLQI(KLON,KLEV),LLQL(KLON,KLEV)
 LOGICAL :: LLMASKS(KLON)
 
 !-------------------------------------------------------------------------------
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',0,ZHOOK_HANDLE)
 ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
  & FCM_P_DL=>YDPHY3%FCM_P_DL, FCM_P_DI=>YDPHY3%FCM_P_DI, FCM_AI=>YDPHY3%FCM_AI, &
  & FCM_Q_GI=>YDPHY3%FCM_Q_GI, FCM_B_BI=>YDPHY3%FCM_B_BI, FCM_AL=>YDPHY3%FCM_AL, &
@@ -189,17 +191,6 @@ ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
  & FCM_MU_AI=>YDPHY3%FCM_MU_AI, FCM_MU_AL=>YDPHY3%FCM_MU_AL, &
  & LCLSATUR=>YDPHY%LCLSATUR)
 !-------------------------------------------------------------------------------
-
-!$acc data &
-!$acc& present(YDPHY,YDPHY3,PDELP    ,&
-!$acc&   PNEB     ,PQI      ,PQL      ,PR       ,PAPRSF   ,&
-!$acc&   PT       ,PDEOSA   ,PBSFSI   ,PBSFSL   ,PBSFTI   ,&
-!$acc&   PBSFTL   ,PEOASI   ,PEOASL   ,PEOATI   ,PEOATL   ,&
-!$acc&   PEODSI   ,PEODSL   ,PEODTI   ,PEODTL   ,PEOSIDIR ,&
-!$acc&   PEOSLDIR ,PUSAI    ,PUSAL    ,PUSBI    ,PUSBL, LDMASKS ) &
-!$acc& create(ZIWC ,ZLWC ,ZDEL0_EFFA ,ZDEL0_EFFD ,ZDE1 ,ZRE1 ,ZDEL0 ,ZEOAI ,&
-!$acc&   ZEOAL ,ZEODI ,ZEODL ,ZGI ,ZGL, LLQL, LLQI, LLMASKS )
-
 
 ! 1. Computation of cloud optical properties
 ! ------------------------------------------
@@ -520,10 +511,8 @@ ELSE
 
 ENDIF
 
-!$acc end data
-
 END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',1,ZHOOK_HANDLE)
 
 ! ------------------------------------------------------------------------------
 
@@ -558,7 +547,7 @@ REAL(KIND=JPRB) :: ZSIZE,ZP,ZQ
 
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',0,ZHOOK_HANDLE)
 !ASSOCIATE(FCM_Q_DI=>YDPHY3%FCM_Q_DI, FCM_Q_DL=>YDPHY3%FCM_Q_DL, &
 ! & FCM_P_DL=>YDPHY3%FCM_P_DL, FCM_P_DI=>YDPHY3%FCM_P_DI, FCM_AI=>YDPHY3%FCM_AI, &
 ! & FCM_Q_GI=>YDPHY3%FCM_Q_GI, FCM_B_BI=>YDPHY3%FCM_B_BI, FCM_AL=>YDPHY3%FCM_AL, &
@@ -593,7 +582,7 @@ DO JLEV=KTDIA,KLEV
 ENDDO
 
 !END ASSOCIATE
-IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',1,ZHOOK_HANDLE)
+!!IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2:FIT1',1,ZHOOK_HANDLE)
 
 END SUBROUTINE FIT1
 

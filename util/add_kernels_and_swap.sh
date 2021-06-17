@@ -40,13 +40,13 @@ for ff in ${ffs}; do
 					level_start=-999;
 				}
 
-				if ( start_kernel == 1 ) print "!$acc parallel loop gang vector\ndo jlon=kidia,kfdia\n"
+				if ( start_kernel == 1 ) print "!$acc loop vector\ndo jlon=kidia,kfdia\n"
 				if ( start_hloop==0 && end_hloop==0 ) {
 					print $0;
 				} else {
 					print "! removed hloop : " $0;
 				}
-				if ( end_kernel == 1 ) print "enddo\n!$acc end parallel loop"
+				if ( end_kernel == 1 ) print "enddo\n!$acc end loop"
 				start_kernel=0;
 				end_kernel=0;
 				start_hloop=0
