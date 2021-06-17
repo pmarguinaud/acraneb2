@@ -254,6 +254,8 @@ ZIBV0       =1._JPRB/0.74_JPRB
 ZIZV0       =1._JPRB/0.0027_JPRB
 ZVOISIM     =1.21_JPRB
 
+!$acc update device (ZT_RHOZ0V)
+
 ! ratio of diffusivity factors sqrt(e) and 2 (the latter is used in
 ! weak line limit)
 ZMD=0.5_JPRB*EXP(0.5_JPRB)
