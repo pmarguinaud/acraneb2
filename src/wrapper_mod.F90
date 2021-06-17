@@ -111,7 +111,6 @@ ts=omp_get_wtime()
 
 DO JCOUNT=1,KCOUNT
 
-#ifdef USE_DATAREGION
   !$acc data &
 	!$acc&   copyin( YDERDI,YDRIP,YDML_PHY_MF, &
   !$acc&     PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
@@ -123,7 +122,6 @@ DO JCOUNT=1,KCOUNT
   !$acc&     PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR) &
   !$acc&   copyout(PFRSO,PFRTH, &
   !$acc&     PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
-#endif
 
 	DO JBLK=1,KGPBLK
 			
@@ -149,9 +147,7 @@ DO JCOUNT=1,KCOUNT
 
 	ENDDO
 
-#ifdef USE_DATAREGION
   !$acc end data
-#endif
 
 ENDDO
 
