@@ -2,3 +2,6 @@ work/
 src/*.o
 src/*.mod
 src/main
+.*.swp
+*.F90.xml
+*.F90.new
