@@ -512,7 +512,7 @@ DO JLEV=KLEV,KTDIA,-1
 	! daand: a bit worried about PT and ZUEOTA0/ZUEOTA1 being passed as scalars here ...
   CALL DELTA_C(JLEV,PAPRSF(:,JLEV),PT(:,JLEV),ZDU,&
    & ZC_UW,ZC_US,ZC_US_IRHOV,ZC_UC,ZC_U,ZC_PU,ZC_TU,&
-   & ZUEOTA0(1,JLEV))
+   & ZUEOTA0(:,JLEV))
   CALL DELTA_T(JLEV,PAPRSF(:,JLEV),PT(:,JLEV),ZDU,&
    & ZT_UW,ZT_US,ZT_US_IRHOV,ZT_UC,ZT_U,ZT_PU,ZT_TU,&
    & ZUEOTA1(:,JLEV))
