@@ -51,8 +51,8 @@ sub replaceDummyArgumentByActualNamedE
   my @re = &f ('./f:R-LT/' . &Fxtran::xpath_by_type ('R'), $e);
   my @ra = &f ('./f:R-LT/' . &Fxtran::xpath_by_type ('R'), $a);
 
-  my $se = $e->toString;
-  my $sa = $a->toString;
+  my $se = $e->toString; my $te = $e->textContent;
+  my $sa = $a->toString; my $ta = $a->textContent;
 
   # Use actual argument name
 
@@ -79,18 +79,15 @@ sub replaceDummyArgumentByActualNamedE
       die unless ($re->nodeName =~ m/(?:parens|array)-R$/o);
       die unless ($ra->nodeName =~ m/(?:parens|array)-R$/o);
 
-      my @el = &f ('./f:element-LT/f:element/' . &Fxtran::xpath_by_type ('E'), $re);
-      my @ss = &f ('./f:section-subscript-LT/f:section-subscript/node ()', $ra);
+      my @ele = &f ('./f:element-LT/f:element/' . &Fxtran::xpath_by_type ('E'), $re);
+      my @ssa = &f ('./f:section-subscript-LT/f:section-subscript/node ()', $ra);
 
-      for (my $i = 0; $i < @el; $i++)
+      for (my ($ia, $ie) = (0, 0); $ia < @ssa; $ia++)
         {
-          if ($ss[$i]->textContent eq ':')
+          if ($ssa[$ia]->textContent eq ':')
             {
-              $ss[$i]->replaceNode ($el[$i]->cloneNode (1));
-            }
-          else
-            {
-              die $ss[$i]->textContent;
+              $ssa[$ia]->replaceNode ($ele[$ie]->cloneNode (1));
+              $ie++;
             }
         }
         

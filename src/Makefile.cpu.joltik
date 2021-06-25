@@ -42,4 +42,4 @@ acraneb_transs.F90: acraneb_transs.contains.F90
 include Makefile_deps.mk
 
 clean:
-	rm main *.o *.mod
+	\rm -f main *.o *.mod acraneb_transt.F90 acraneb_transs.F90
