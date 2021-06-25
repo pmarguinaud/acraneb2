@@ -102,133 +102,205 @@ sub replaceArgNamedE
 
 }
 
+sub removeStmt
+{
+  my $stmt = shift;
+  # Remove everything until eol
+ 
+  my @n;
+  for (my $n = $stmt; $n; $n = $n->nextSibling)
+    {
+      push @n, $n;
+      if ($n->nodeName eq '#text')
+        {
+          last if ($n->data =~ m/\n/o);
+        }
+    }
+  
+  # Remove everything from start of line
+
+  for (my $n = $stmt->previousSibling; $n; $n = $n->previousSibling)
+    {
+      if ($n->nodeName eq '#text')
+        {
+          if ($n->data =~ m/\n/o)
+            {
+              my $t = $n->data;
+              $t =~ s/\n\s*$/\n/o;
+              $n->setData ($t);
+              last;
+            }
+        }
+      else
+        {
+          last;
+        }
+      push @n, $n;
+    }
+  
+  for (@n)
+    {
+      $_->unbindNode ();
+    }
+}
+
+sub getIndent
+{
+  # get statement indentation
+
+  my $stmt = shift;
+
+  my $n = $stmt->previousSibling;
+
+  unless ($n)
+    {
+      if ($stmt->parentNode)
+        {
+          return &getIndent ($stmt->parentNode);
+        }
+      return 0;
+    }
+
+
+  if (($n->nodeName eq '#text') && ($n->data =~ m/\n/o))
+    {
+      (my $t = $n->data) =~ s/^.*\n//o;
+      return length ($t);
+    }
+
+  return 0;
+}
+
+sub reIndent
+{
+  my ($node, $ns) = @_;
+
+  my $sp = ' ' x $ns;
+
+  my @cr = &f ('.//text ()[contains (.,"' . "\n" . '")]', $node);
+
+  for my $cr (@cr)
+    {
+      (my $t = $cr->data) =~ s/\n/\n$sp/g;
+      $cr->setData ($t);
+    }
+
+}
+
+
 my ($f1, $suf) = @ARGV;
 
 $suf ||= '';
 
 my $d1 = &Fxtran::fxtran (location => $f1);
 
-my ($d2) = &f ('.//f:program-unit[./f:subroutine-stmt[./f:subroutine-N/f:N/f:n/text ()="DELTA_C"]]', $d1);
+my ($D2) = &f ('.//f:program-unit[./f:subroutine-stmt[./f:subroutine-N/f:N/f:n/text ()="DELTA_C"]]', $d1);
+my ($S2) = &f ('.//f:subroutine-stmt', $D2);
+my ($n2) = &f ('./f:subroutine-N/f:N/f:n/text ()', $S2, 1);
 
-$d2 = $d2->cloneNode (1);
 
 my ($s1) = &f ('.//f:subroutine-stmt', $d1);
-my ($s2) = &f ('.//f:subroutine-stmt', $d2);
-
-my ($n2) = &f ('./f:subroutine-N/f:N/f:n/text ()', $s2, 1);
-
-my @da = &f ('./f:dummy-arg-LT/f:arg-N/f:N/f:n/text ()', $s2, 1);
-my %da2aa;
 
 my @call = &f ('.//f:call-stmt[./f:procedure-designator/f:named-E/f:N/f:n/text ()="?"]', $n2, $d1);
 
 for my $call (@call)
   {
-    my @aa = &f ('.//f:arg-spec/f:arg/*', $call);
-    die $call->toString unless (@aa == @da);
-    for my $aa (@aa)
+    my $d2 = $D2->cloneNode (1);
+    my $s2 = $S2->cloneNode (1);
+    my @da = &f ('./f:dummy-arg-LT/f:arg-N/f:N/f:n/text ()', $s2, 1);
+
+
+    my %da2aa;
+
+    {
+      my @aa = &f ('.//f:arg-spec/f:arg/*', $call);
+      die $call->toString unless (@aa == @da);
+      for my $aa (@aa)
+        {
+          # check we have a simple named expression without any reference 
+          if (($aa->nodeName ne 'named-E') && (&f ('.//f:R-LT//parens-R', $aa)))
+            {
+              die $aa->toString;
+            }
+        }
+      for my $i (0 .. $#aa)
+        {
+          $da2aa{$da[$i]} = $aa[$i];
+        }
+    }
+
+    # Remove dummy arguments declaration
+    
+    for my $da (@da)
       {
-        # check we have a simple named expression without any reference 
-        if (($aa->nodeName ne 'named-E') && (&f ('.//f:R-LT//parens-R', $aa)))
+        my @en_decl = &f ('.//f:EN-decl/f:EN-N/f:N/f:n[text ()="?"]', $da, $d2);
+        for my $en_decl (@en_decl)
           {
-            die $aa->toString;
+            my ($stmt) = &Fxtran::stmt ($en_decl);
+            &removeStmt ($stmt);
           }
       }
-    for my $i (0 .. $#aa)
+
+    # Replace dummy arguments by actual arguments
+    for my $da (@da)
       {
-        $da2aa{$da[$i]} = $aa[$i];
+        my @e = &f ('.//f:named-E[./f:N/f:n/text ()="?"]', $da, $d2);
+    
+        for my $e (@e)
+          {
+            &replaceArg ($e, $da2aa{$da});
+          }
       }
     
-    last;
-  }
-
-
-
-
-# Remove dummy arguments declaration
-
-for my $da (@da)
-  {
-    my @en_decl = &f ('.//f:EN-decl/f:EN-N/f:N/f:n[text ()="?"]', $da, $d2);
-    for my $en_decl (@en_decl)
+    # Remove possible IMPLICIT NONE statement
+    
+    for (&f ('.//f:implicit-none-stmt', $d2))
       {
-        my ($stmt) = &Fxtran::stmt ($en_decl);
-
-        my @n;
-        for (my $n = $stmt; $n; $n = $n->nextSibling)
-          {
-            push @n, $n;
-            if ($n->nodeName eq '#text')
-              {
-                last if ($n->data =~ m/\n/o);
-              }
-          }
-
-        for (my $n = $stmt->previousSibling; $n; $n = $n->previousSibling)
-          {
-            if ($n->nodeName eq '#text')
-              {
-                if ($n->data =~ m/\n/o)
-                  {
-                    my $t = $n->data;
-                    $t =~ s/\n\s*$/\n/o;
-                    $n->setData ($t);
-                    last;
-                  }
-              }
-            push @n, $n;
-          }
-
-
-        for (@n)
-          {
-            $_->unbindNode ();
-          }
-
-      }
-  }
-
-# Replace dummy arguments by actual arguments
-for my $da (@da)
-  {
-    my @e = &f ('.//f:named-E[./f:N/f:n/text ()="?"]', $da, $d2);
-
-    for my $e (@e)
-      {
-        &replaceArg ($e, $da2aa{$da});
-      }
-  }
-
-
-for (&f ('.//f:implicit-none-stmt', $d2))
-  {
-    $_->unbindNode (); # Should move includes to d1
-  }
-
-for my $call (@call)
-  {
-    my @stmt = &f ('descendant-or-self::f:program-unit/node ()', $d2);
-
-    shift (@stmt);
-    pop (@stmt);
-
-    for my $stmt (reverse @stmt)
-      {
-        $call->parentNode->insertAfter ($stmt, $call);
+        $_->unbindNode (); # Should move includes to d1
       }
 
+    my @node = &f ('descendant-or-self::f:program-unit/node ()', $d2);
+
+    # Drop subroutine && end subroutine statements
+    shift (@node);
+    pop (@node);
+
+    my $ci = &getIndent ($call);
+
+    # Insert statements from inlined routine
+
+    $call->parentNode->insertAfter (&t ("\n"), $call);
+    $call->parentNode->insertAfter (&n ("<C>!----- END INLINE $n2</C>"), $call);
+    $call->parentNode->insertAfter (&t ("\n"  . (' ' x $ci)), $call);
+
+    for my $node (reverse @node)
+      {
+        my $si = &getIndent ($node);
+        my $di = $ci - $si; $di = $di > 0 ? $di : 0;
+        &reIndent ($node, $di);
+        $call->parentNode->insertAfter ($node, $call);
+        $call->parentNode->insertAfter (&t (' ' x $di), $call);
+      }
+
+    # Comment old code (CALL)
     my @c = split (m/\n/o, $call->textContent ());
-    for my $c (reverse @c)
+    for my $i (reverse (0 .. $#c))
       {
-        $c = "! $c";
+        my $c = $c[$i];
+        $c = (' ' x ($ci)) . "! $c";
         $c = &t ($c);
         $c = $c->toString ();
         $call->parentNode->insertAfter (&t ("\n"), $call);
         $call->parentNode->insertAfter (&n ("<C>" . $c . "</C>"), $call);
       }
+
+    $call->parentNode->insertAfter (&t ("\n"), $call);
+    $call->parentNode->insertAfter (&t ("\n"), $call);
+    $call->parentNode->insertAfter (&n ("<C>!----- BEGIN INLINE $n2</C>"), $call);
+    $call->parentNode->insertAfter (&t ("\n"  . (' ' x $ci)), $call);
+
     $call->unbindNode ();
 
-    last;
   }
 
 
@@ -236,6 +308,5 @@ for my $call (@call)
 
 
 'FileHandle'->new (">$f1.new")->print ($d1->textContent ());
-'FileHandle'->new (">delta_c.F90.new")->print ($d2->textContent ());
 
 
