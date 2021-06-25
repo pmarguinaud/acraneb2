@@ -29,6 +29,8 @@ for my $assoc (@assoc)
 
         for my $expr (@expr)
           {
+            # List of references for current expression
+
             my @r = &f ('./f:R-LT/node ()', $expr);
             my $E = $e->cloneNode (1);
             if (@r)
@@ -39,11 +41,16 @@ for my $assoc (@assoc)
                     $rlt = &n ('<R-LT/>');
                     $E->appendChild ($rlt);
                   }
+
+                # Append expression references to new expression
                 for (@r)
                   {
                     $rlt->appendChild ($_);
                   }
               }
+
+            # Replace expression with its association
+
             $expr->replaceNode ($E);
           }
 
