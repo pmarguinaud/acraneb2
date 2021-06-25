@@ -321,9 +321,9 @@ ENDDO
 ! compute total and incremental optical depths
 ! (solar incremental multiplied by 2.mu0)
 ! daand: a bit worried about PT and ZDEOSA being passed as scalars here ...
-CALL DELTA_S(KTDIA-1,LL_DESC,ZP,PT(1,KTDIA),ZDU,&
+CALL DELTA_S(KTDIA-1,LL_DESC,ZP,PT(:,KTDIA),ZDU,&
  & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
- & ZDEOSA(1,KTDIA-1))
+ & ZDEOSA(:,KTDIA-1))
 DO JLON=KIDIA,KFDIA
 	!IF ( LDMASKS(JLON) ) THEN
     PDEOSI(JLON,KTDIA-1)=ZDEOSA(JLON,KTDIA-1)/PDM0I(JLON)
@@ -357,9 +357,9 @@ DO JLEV=KTDIA,KLEV
 
   ! compute total and incremental optical depths
   ! (solar incremental multiplied by 2.mu0)
-  CALL DELTA_S(JLEV,LL_DESC,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
+  CALL DELTA_S(JLEV,LL_DESC,PAPRSF(:,JLEV),PT(:,JLEV),ZDU,&
    & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
-   & ZDEOSA(1,JLEV))
+   & ZDEOSA(:,JLEV))
 	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       PDEOSI(JLON,JLEV)=&
@@ -401,9 +401,9 @@ DO JLEV=KLEV,KTDIA,-1
 
   ! compute total and incremental optical depths
 	! daand: a bit worried about PT and ZUEOSA being passed as scalars here ...
-  CALL DELTA_S(JLEV,LL_DESC,PAPRSF(1,JLEV),PT(1,JLEV),ZDU,&
+  CALL DELTA_S(JLEV,LL_DESC,PAPRSF(:,JLEV),PT(:,JLEV),ZDU,&
    & ZS_UW,ZS_US,ZS_US_IRHOV,ZS_UC,ZS_U,ZS_PU,ZS_TU,&
-   & ZUEOSA(1,JLEV))
+   & ZUEOSA(:,JLEV))
 	DO JLON=KIDIA,KFDIA
 		!IF ( LDMASKS(JLON) ) THEN
       PUEOSI(JLON,JLEV)=MAX(ZUEOSA(JLON,JLEV)-ZEOSO(JLON),0._JPRB)
