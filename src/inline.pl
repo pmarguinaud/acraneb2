@@ -8,17 +8,17 @@ use FindBin qw ($Bin);
 use lib $Bin;
 use Fxtran;
 
-sub replaceArg
+sub replaceDummyArgumentByActual
 {
   my ($e, $a) = @_;
 
   if ($a->nodeName eq 'named-E')
     {
-      return &replaceArgNamedE ($e, $a);
+      return &replaceDummyArgumentByActualNamedE ($e, $a);
     }
   elsif ($a->nodeName eq 'op-E')
     {
-      return &replaceArgOpE ($e, $a);
+      return &replaceDummyArgumentByActualOpE ($e, $a);
     }
   else
     {
@@ -27,7 +27,7 @@ sub replaceArg
 
 }
 
-sub replaceArgOpE
+sub replaceDummyArgumentByActualOpE
 {
   my ($e, $a) = @_;
 
@@ -41,7 +41,7 @@ sub replaceArgOpE
 
 }
 
-sub replaceArgNamedE
+sub replaceDummyArgumentByActualNamedE
 {
   my ($e, $a) = @_;
 
@@ -53,6 +53,8 @@ sub replaceArgNamedE
 
   my $se = $e->toString;
   my $sa = $a->toString;
+
+  # Use actual argument name
 
   $ne->replaceNode (&t ($na->textContent));
 
@@ -66,6 +68,8 @@ sub replaceArgNamedE
       return;
     }
   
+  # Resolve array references
+
   if ((scalar (@ra) == 1) && (scalar (@re) == 1))
     {
       my ($re, $ra) = (@re, @ra);
@@ -191,12 +195,12 @@ sub inlineContainedSubroutine
 {
   my ($d1, $n2) = @_;
 
+
+  # Subroutine to be inlined
   my ($D2) = &f ('.//f:program-unit[./f:subroutine-stmt[./f:subroutine-N/f:N/f:n/text ()="?"]]', $n2, $d1);
   my ($S2) = &f ('.//f:subroutine-stmt', $D2);
   
-  
-  my ($s1) = &f ('.//f:subroutine-stmt', $d1);
-  
+  # Subroutine calls to be replaced by subroutine contents
   my @call = &f ('.//f:call-stmt[./f:procedure-designator/f:named-E/f:N/f:n/text ()="?"]', $n2, $d1);
   
   for my $call (@call)
@@ -205,7 +209,8 @@ sub inlineContainedSubroutine
       my $s2 = $S2->cloneNode (1);
       my @da = &f ('./f:dummy-arg-LT/f:arg-N/f:N/f:n/text ()', $s2, 1);
   
-  
+
+      # Dummy arguments to actual arguments
       my %da2aa;
   
       {
@@ -213,7 +218,7 @@ sub inlineContainedSubroutine
         die $call->toString unless (@aa == @da);
         for my $aa (@aa)
           {
-            # check we have a simple named expression without any reference 
+            # Check we have a simple named expression without any reference 
             if (($aa->nodeName ne 'named-E') && (&f ('.//f:R-LT//parens-R', $aa)))
               {
                 die $aa->toString;
@@ -244,7 +249,7 @@ sub inlineContainedSubroutine
       
           for my $e (@e)
             {
-              &replaceArg ($e, $da2aa{$da});
+              &replaceDummyArgumentByActual ($e, $da2aa{$da});
             }
         }
       
@@ -258,12 +263,15 @@ sub inlineContainedSubroutine
       my @node = &f ('descendant-or-self::f:program-unit/node ()', $d2);
   
       # Drop subroutine && end subroutine statements
+
       shift (@node);
       pop (@node);
   
+      # Get indentation level of CALL statement
+
       my $ci = &getIndent ($call);
   
-      # Insert statements from inlined routine
+      # Insert statements from inlined routine + a few comments
   
       $call->parentNode->insertAfter (&t ("\n"), $call);
       $call->parentNode->insertAfter (&n ("<C>!----- END INLINE $n2</C>"), $call);
@@ -295,6 +303,9 @@ sub inlineContainedSubroutine
       $call->parentNode->insertAfter (&n ("<C>!----- BEGIN INLINE $n2</C>"), $call);
       $call->parentNode->insertAfter (&t ("\n"  . (' ' x $ci)), $call);
   
+
+      # Remove CALL statement 
+
       $call->unbindNode ();
   
     }
@@ -303,16 +314,12 @@ sub inlineContainedSubroutine
 
 my ($f1, @n2) = @ARGV;
 
-
 my $d1 = &Fxtran::fxtran (location => $f1);
-
 
 for my $n2 (@n2)
   {
     &inlineContainedSubroutine ($d1, $n2);
   }
-
-
 
 
 'FileHandle'->new (">$f1.new")->print ($d1->textContent ());
