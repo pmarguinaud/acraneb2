@@ -113,7 +113,7 @@ INTEGER(KIND=JPIM),INTENT(IN) :: KFDIA
 INTEGER(KIND=JPIM),INTENT(IN) :: KLON
 INTEGER(KIND=JPIM),INTENT(IN) :: KTDIA
 INTEGER(KIND=JPIM),INTENT(IN) :: KLEV
-LOGICAL,          INTENT(IN)  :: LDMASKS(KLON)
+LOGICAL,          INTENT(IN)  :: LDMASKS
 
 REAL(KIND=JPRB),INTENT(IN)  :: PDELP   (KLON,KLEV)
 REAL(KIND=JPRB),INTENT(IN)  :: PNEB    (KLON,KLEV)
@@ -169,9 +169,9 @@ temp (REAL (KIND=JPRB),ZEODI,(KLON,KLEV,YDPHY3%N_SPBAND))
 temp (REAL (KIND=JPRB),ZEODL,(KLON,KLEV,YDPHY3%N_SPBAND))
 temp (REAL (KIND=JPRB),ZGI,(KLON,KLEV,YDPHY3%N_SPBAND))
 temp (REAL (KIND=JPRB),ZGL,(KLON,KLEV,YDPHY3%N_SPBAND))
-temp (LOGICAL, LLQI,(KLON,KLEV))
-temp (LOGICAL, LLQL,(KLON,KLEV))
-temp (LOGICAL, LLMASKS,(KLON))
+LOGICAL :: LLQI (KLEV)
+LOGICAL :: LLQL (KLEV)
+LOGICAL :: LLMASKS 
 
 
 init_stack ()
@@ -188,9 +188,6 @@ alloc(ZEODI)
 alloc(ZEODL)
 alloc(ZGI)
 alloc(ZGL)
-alloc(LLQI)
-alloc(LLQL)
-alloc(LLMASKS)
 
 !-------------------------------------------------------------------------------
 !IF (LHOOK) CALL DR_HOOK('AC_CLOUD_MODEL2',0,ZHOOK_HANDLE)
@@ -277,8 +274,8 @@ ELSE
   ! daand: add explicit loops
 	DO JLEV=1,KLEV
 	  DO JLON=KIDIA,KFDIA
-			LLQI(JLON,JLEV)=PQI(JLON,JLEV) > 0._JPRB
-			LLQL(JLON,JLEV)=PQL(JLON,JLEV) > 0._JPRB
+			LLQI(JLEV)=PQI(JLON,JLEV) > 0._JPRB
+			LLQL(JLEV)=PQL(JLON,JLEV) > 0._JPRB
 		ENDDO
 	ENDDO
 
@@ -300,7 +297,7 @@ ELSE
       DO JLON=KIDIA,KFDIA
 
         ! effective dimension D_e of ice particles [micron]
-        IF ( LLQI(JLON,JLEV) ) THEN
+        IF ( LLQI(JLEV) ) THEN
           ZDE=FCM_IWC2DE(JB,0)+FCM_IWC2DE(JB,1)*&
            & (ZIWC(JLON,JLEV)+FCM_IWC2DE(JB,2))**FCM_IWC2DE(JB,3)
           ZDE=MAX(FCM_IWC2DE(JB,-2),MIN(FCM_IWC2DE(JB,-1),ZDE))
@@ -310,7 +307,7 @@ ELSE
         ENDIF
 
         ! effective radius R_e of water droplets [micron]
-        IF ( LLQL(JLON,JLEV) ) THEN
+        IF ( LLQL(JLEV) ) THEN
           ZRE=FCM_LWC2RE(JB,0)+FCM_LWC2RE(JB,1)*&
            & (ZLWC(JLON,JLEV)+FCM_LWC2RE(JB,2))**FCM_LWC2RE(JB,3)
           ZRE=MAX(FCM_LWC2RE(JB,-2),MIN(FCM_LWC2RE(JB,-1),ZRE))
@@ -347,11 +344,11 @@ ELSE
     ! differentiate between solar/thermal bounds
     IF ( JB == 1 ) THEN
 		  DO JLON=KIDIA,KFDIA
-			  LLMASKS(JLON)=LDMASKS(JLON)
+			  LLMASKS=LDMASKS
 			ENDDO
     ELSE
 		  DO JLON=KIDIA,KFDIA
-			  LLMASKS(JLON)=.TRUE.
+			  LLMASKS=.TRUE.
 			ENDDO
     ENDIF
 
@@ -369,13 +366,13 @@ ELSE
 
           ! unscale k_abs, k_scat, convert units to [1/Pa],
           ! unscale asymmetry factor
-          IF ( LLQI(JLON,JLEV) ) THEN
+          IF ( LLQI(JLEV) ) THEN
             ZEOAI(JLON,JLEV,JB)=EXP(ZEOAI(JLON,JLEV,JB))*ZRRG
             ZEODI(JLON,JLEV,JB)=EXP(ZEODI(JLON,JLEV,JB))*ZRRG
             ZGI  (JLON,JLEV,JB)=0.5_JPRB/&
              & (1.0_JPRB+EXP(-2.0_JPRB*ZGI(JLON,JLEV,JB)))
           ENDIF
-          IF ( LLQL(JLON,JLEV) ) THEN
+          IF ( LLQL(JLEV) ) THEN
             ZEOAL(JLON,JLEV,JB)=EXP(ZEOAL(JLON,JLEV,JB))*ZRRG
             ZEODL(JLON,JLEV,JB)=EXP(ZEODL(JLON,JLEV,JB))*ZRRG
             ZGL  (JLON,JLEV,JB)=0.5_JPRB/&
