@@ -2,3 +2,6 @@ work/
 src/*.o
 src/*.mod
 src/main
+*.ncu-rep
+*.qdrep
+
