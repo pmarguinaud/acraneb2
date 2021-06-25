@@ -6,4 +6,6 @@ set -e
 make
 
 cd ../data
-../src/main  --nproma 32 --ngpblk 4 --ncount 1 --check 
+../src/main  --nproma 32 --ngpblk 4 --ncount 1 --check --save
+
+

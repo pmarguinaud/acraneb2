@@ -144,6 +144,7 @@ for my $call (@call)
 
 
 
+
 # Remove dummy arguments declaration
 
 for my $da (@da)
@@ -152,16 +153,40 @@ for my $da (@da)
     for my $en_decl (@en_decl)
       {
         my ($stmt) = &Fxtran::stmt ($en_decl);
-        my ($cr) = &f ('following::text ()[contains (., "' . "\n" . '")]', $stmt);
-        $stmt->unbindNode ();
-        $cr->unbindNode ();
+
+        my @n;
+        for (my $n = $stmt; $n; $n = $n->nextSibling)
+          {
+            push @n, $n;
+            if ($n->nodeName eq '#text')
+              {
+                last if ($n->data =~ m/\n/o);
+              }
+          }
+
+        for (my $n = $stmt->previousSibling; $n; $n = $n->previousSibling)
+          {
+            if ($n->nodeName eq '#text')
+              {
+                if ($n->data =~ m/\n/o)
+                  {
+                    my $t = $n->data;
+                    $t =~ s/\n\s*$/\n/o;
+                    $n->setData ($t);
+                    last;
+                  }
+              }
+            push @n, $n;
+          }
+
+
+        for (@n)
+          {
+            $_->unbindNode ();
+          }
+
       }
   }
-
-# Remove first and last statements
-
-$s2->parentNode ()->lastChild ()->unbindNode ();
-$s2->unbindNode ();
 
 # Replace dummy arguments by actual arguments
 for my $da (@da)
@@ -184,16 +209,25 @@ for my $call (@call)
   {
     my @stmt = &f ('descendant-or-self::f:program-unit/node ()', $d2);
 
-    for my $stmt (@stmt)
+    shift (@stmt);
+    pop (@stmt);
+
+    for my $stmt (reverse @stmt)
       {
-        $call->parentNode->insertBefore ($stmt, $call);
+        $call->parentNode->insertAfter ($stmt, $call);
       }
 
-    my $c = $call->textContent ();
-    $c =~ s/\n/\n! /goms;
-    $c = "! $c";
-    $call->parentNode->insertBefore (&t ($c), $call);
+    my @c = split (m/\n/o, $call->textContent ());
+    for my $c (reverse @c)
+      {
+        $c = "! $c";
+        $c = &t ($c);
+        $c = $c->toString ();
+        $call->parentNode->insertAfter (&t ("\n"), $call);
+        $call->parentNode->insertAfter (&n ("<C>" . $c . "</C>"), $call);
+      }
     $call->unbindNode ();
+
     last;
   }
 
