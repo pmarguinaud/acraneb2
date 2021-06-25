@@ -29,6 +29,14 @@ main: main.o ac_cloud_model2.o acraneb_coefs.o acraneb_coeft.o acraneb_solvs.o a
 acraneb_transt.F90: acraneb_transt.contains.F90
 	./inline.pl acraneb_transt.contains.F90 DELTA_C DELTA_T
 	\mv acraneb_transt.contains.F90.new acraneb_transt.F90
+	./removecontains.pl acraneb_transt.F90
+	\mv acraneb_transt.F90.new acraneb_transt.F90
+
+acraneb_transs.F90: acraneb_transs.contains.F90
+	./inline.pl acraneb_transs.contains.F90 DELTA_S
+	\mv acraneb_transs.contains.F90.new acraneb_transs.F90
+	./removecontains.pl acraneb_transs.F90
+	\mv acraneb_transs.F90.new acraneb_transs.F90
 
 # dependencies generated with finddeps.sh
 include Makefile_deps.mk
