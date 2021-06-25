@@ -11,6 +11,7 @@ INTEGER :: IARG
 CHARACTER(LEN=256) :: CARG
 INTEGER(KIND=JPIM) :: NPROMA,NLEV,NGPBLK,NCOUNT
 LOGICAL :: LCHECK
+INTEGER :: IWRAPPER
 
 ! default arguments
 NPROMA=32
@@ -18,12 +19,17 @@ NLEV=87
 NGPBLK=1
 NCOUNT=1
 LCHECK=.FALSE.
+IWRAPPER=1
 
 ! parse arguments
 IARG=1
 DO WHILE ( IARG <= COMMAND_ARGUMENT_COUNT() )
   CALL GET_COMMAND_ARGUMENT(IARG,CARG)
 	SELECT CASE (TRIM(CARG))
+                CASE ('--wrapper')
+                        IARG=IARG+1
+			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
+			READ(CARG,*) IWRAPPER
 		CASE ('--nproma')
 			IARG=IARG+1
 			CALL GET_COMMAND_ARGUMENT(IARG,CARG)
@@ -69,13 +75,20 @@ DO WHILE ( IARG <= COMMAND_ARGUMENT_COUNT() )
 ENDDO
 
 WRITE (*,*) 'Running acraneb2 wrapper with'
-WRITE (*,*) '  nproma = ',NPROMA
-WRITE (*,*) '  nlev   = ',NLEV
-WRITE (*,*) '  ngpblk = ',NGPBLK
-WRITE (*,*) '  ncount = ',NCOUNT
-WRITE (*,*) '  lcheck = ',LCHECK
+WRITE (*,*) '  nproma   = ',NPROMA
+WRITE (*,*) '  nlev     = ',NLEV
+WRITE (*,*) '  ngpblk   = ',NGPBLK
+WRITE (*,*) '  ncount   = ',NCOUNT
+WRITE (*,*) '  lcheck   = ',LCHECK
+WRITE (*,*) '  iwrapper = ',IWRAPPER
 
 ! call wrapper
-CALL WRAPPER(NPROMA,NLEV,NGPBLK,NCOUNT,LCHECK)
+
+SELECT CASE (IWRAPPER)
+  CASE (1)
+    CALL WRAPPER_1(NPROMA,NLEV,NGPBLK,NCOUNT,LCHECK)
+  CASE (2)
+    CALL WRAPPER_2(NPROMA,NLEV,NGPBLK,NCOUNT,LCHECK)
+END SELECT
 
 END PROGRAM MAIN

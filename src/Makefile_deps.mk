@@ -1,8 +1,10 @@
 # to generate this file, run ../util/finddeps.sh > Makefile_deps.mk in the src/ directory
 ac_cloud_model2.o:  parkind1.o yomcst.o yomhook_dummy.o yomphy.o yomphy3.o ac_cloud_model2.F90
 	$(FC) -c $(FCOPTS) ac_cloud_model2.F90
-acraneb2.o:  model_physics_mf_mod.o parkind1.o yomhook_dummy.o yomcst.o yomrip.o yoerdi.o acraneb2.F90
-	$(FC) -c $(FCOPTS) acraneb2.F90
+acraneb2_1.o:  model_physics_mf_mod.o parkind1.o yomhook_dummy.o yomcst.o yomrip.o yoerdi.o acraneb2_1.F90
+	$(FC) -c $(FCOPTS) acraneb2_1.F90
+acraneb2_2.o:  model_physics_mf_mod.o parkind1.o yomhook_dummy.o yomcst.o yomrip.o yoerdi.o acraneb2_2.F90
+	$(FC) -c $(FCOPTS) acraneb2_2.F90
 acraneb_coefs.o:  parkind1.o yomhook_dummy.o yomphy3.o acraneb_coefs.F90
 	$(FC) -c $(FCOPTS) acraneb_coefs.F90
 acraneb_coeft.o:  parkind1.o yomhook_dummy.o acraneb_coeft.F90
@@ -79,7 +81,9 @@ parkind1.o:  parkind1.F90
 	$(FC) -c $(FCOPTS) parkind1.F90
 prepare_acraneb2_mod.o:  model_physics_mf_mod.o parkind1.o yomrip.o yoerdi.o load_acraneb2_mod.o prepare_acraneb2_mod.F90
 	$(FC) -c $(FCOPTS) prepare_acraneb2_mod.F90
-wrapper_mod.o:  model_physics_mf_mod.o parkind1.o yomrip.o yoerdi.o prepare_acraneb2_mod.o check_acraneb2_mod.o wrapper_mod.F90
+#WARNING: no source file found containing module omp_lib
+#WARNING: no source file found containing module omp_lib
+wrapper_mod.o:  model_physics_mf_mod.o parkind1.o yomrip.o yoerdi.o prepare_acraneb2_mod.o check_acraneb2_mod.o model_physics_mf_mod.o parkind1.o yomrip.o yoerdi.o prepare_acraneb2_mod.o check_acraneb2_mod.o wrapper_mod.F90
 	$(FC) -c $(FCOPTS) wrapper_mod.F90
 yoerdi.o:  parkind1.o yoerdi.F90
 	$(FC) -c $(FCOPTS) yoerdi.F90

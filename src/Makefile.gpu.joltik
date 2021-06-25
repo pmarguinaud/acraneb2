@@ -22,7 +22,7 @@ FCOPTS=-mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,
 all: main
 
 main: main.o ac_cloud_model2.o acraneb_coefs.o acraneb_coeft.o acraneb_solvs.o acraneb_solvt3.o acraneb_solvt.o \
-    acraneb_transs.o acraneb_transt.o acraneb2.o
+    acraneb_transs.o acraneb_transt.o acraneb2_1.o acraneb2_2.o
 	$(FC) -o main $(FCOPTS) *.o
 
 # dependencies generated with finddeps.sh
