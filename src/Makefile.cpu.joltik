@@ -38,8 +38,14 @@ acraneb_transs.F90: acraneb_transs.contains.F90
 	./removecontains.pl acraneb_transs.F90
 	\mv acraneb_transs.F90.new acraneb_transs.F90
 
+ac_cloud_model2.F90: ac_cloud_model2.contains.F90
+	./inline.pl ac_cloud_model2.contains.F90 FIT1
+	\mv ac_cloud_model2.contains.F90.new ac_cloud_model2.F90
+	./removecontains.pl ac_cloud_model2.F90
+	\mv ac_cloud_model2.F90.new ac_cloud_model2.F90
+
 # dependencies generated with finddeps.sh
 include Makefile_deps.mk
 
 clean:
-	\rm -f main *.o *.mod acraneb_transt.F90 acraneb_transs.F90
+	\rm -f main *.o *.mod acraneb_transt.F90 acraneb_transs.F90 ac_cloud_model2.F90 *.F90.xml
