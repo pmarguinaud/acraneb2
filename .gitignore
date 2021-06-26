@@ -5,3 +5,4 @@ src/main
 .*.swp
 *.F90.xml
 *.F90.new
+tmp/*

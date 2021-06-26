@@ -302,8 +302,16 @@ sub n
 {
   my $xml = shift;
   my $doc = 'XML::LibXML'->load_xml (string => '<?xml version="1.0"?><object xmlns="http://fxtran.net/#syntax">' . $xml . '</object>');
-  my $x = $doc->documentElement ()->firstChild;
-  return $x;
+
+  my @childs = $doc->documentElement ()->childNodes ();
+  if (@childs > 1)
+    {
+      return @childs;
+    }
+  else
+    {
+      return $childs[0];
+    }
 }
 
 sub is_INTEGER
