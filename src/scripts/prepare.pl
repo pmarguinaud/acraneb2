@@ -38,6 +38,7 @@ sub saveToFile
     }
 
   'FileHandle'->new (">$f")->print ($x->textContent ());
+  'FileHandle'->new (">$f.xml")->print ($x->toString ());
 }
 
 sub preProcessIfNewer
@@ -45,19 +46,25 @@ sub preProcessIfNewer
   use Inline;
   use Associate;
   use Fxtran;
+  use Blocks;
 
   my ($f1, $f2) = @_;
 
   if (&newer ($f1, $f2))
     {
       print "Preprocess $f1\n";
+
       my $d = &Fxtran::fxtran (location => $f1);
+      &saveToFile ($d, "tmp/$f2");
 
       &Inline::inlineContainedSubroutines ($d);
       &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
 
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
+
+      &Blocks::addBlocks ($d);
+      &saveToFile ($d, "tmp/addBlocks/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 

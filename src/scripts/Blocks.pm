@@ -61,7 +61,7 @@ sub addBlocks
       # Find DO loops with JLON variable
   
       my @do = &f ('.//f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()="JLON"]', $pu);
-  
+
       my %lh;
   
   
@@ -70,11 +70,10 @@ sub addBlocks
       for my $do (@do)
         {
           my ($doo) = &f ('ancestor-or-self::f:do-construct', $do);
-          $lh{$doo} = $doo;
+          $lh{$doo->unique_key} = $doo;
         }
-  
-      my %seen;
-      my @lh = grep { ! ($seen{$_}++) } values (%lh);
+
+      my @lh = values (%lh);
   
       # For each top level loop, enclose it in JBLK and JLON loops
   
@@ -89,11 +88,11 @@ sub addBlocks
           # Create a JBLK/JLON loop nest
   
           my @dob = &n (<< "EOF");
-  <do-construct><do-stmt>DO <do-V><named-E><N><n>JBLK</n></N></named-E></do-V> = <lower-bound><literal-E><l>1</l></literal-E></lower-bound>, <upper-bound><named-E><N><n>KGPBLKS</n></N></named-E></upper-bound></do-stmt>
-  $sp<do-construct><do-stmt>DO <do-V><named-E><N><n>JLON</n></N></named-E></do-V> = <lower-bound><named-E><N><n>KIDIA</n></N></named-E></lower-bound>, <upper-bound><named-E><N><n>KFDIA</n></N></named-E></upper-bound></do-stmt>
-  $sp<C/>
-  $sp<end-do-stmt>ENDDO</end-do-stmt></do-construct>
-  $sp<end-do-stmt>ENDDO</end-do-stmt></do-construct>
+<do-construct><do-stmt>DO <do-V><named-E><N><n>JBLK</n></N></named-E></do-V> = <lower-bound><literal-E><l>1</l></literal-E></lower-bound>, <upper-bound><named-E><N><n>KGPBLKS</n></N></named-E></upper-bound></do-stmt>
+$sp<do-construct><do-stmt>DO <do-V><named-E><N><n>JLON</n></N></named-E></do-V> = <lower-bound><named-E><N><n>KIDIA</n></N></named-E></lower-bound>, <upper-bound><named-E><N><n>KFDIA</n></N></named-E></upper-bound></do-stmt>
+$sp<C/>
+$sp<end-do-stmt>ENDDO</end-do-stmt></do-construct>
+$sp<end-do-stmt>ENDDO</end-do-stmt></do-construct>
 EOF
   
           # Inject the nest before the outermost loop
@@ -110,7 +109,9 @@ EOF
   
           # Add JBLK index to variables
   
-          my @elt = &f ('.//f:element-LT[./f:element/f:named-E/f:N/f:n/text ()="JLON"]', $lh);
+          my @elt = (&f ('.//f:element-LT[./f:element/f:named-E/f:N/f:n/text ()="JLON"]', $lh),
+                     &f ('.//f:section-subscript-LT[./f:section-subscript/f:named-E/f:N/f:n/text ()="JLON"]', $lh));
+
           for my $elt (@elt)
             {
               $elt->appendChild (&t (','));
@@ -137,6 +138,7 @@ EOF
         }
   
   
+
     }
   
 }
