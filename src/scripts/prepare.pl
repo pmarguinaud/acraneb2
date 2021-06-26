@@ -63,8 +63,8 @@ sub preProcessIfNewer
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
-      &Blocks::addBlocks ($d);
-      &saveToFile ($d, "tmp/addBlocks/$f2");
+#     &Blocks::addBlocks ($d);
+#     &saveToFile ($d, "tmp/addBlocks/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 
@@ -89,7 +89,7 @@ for my $f (@compute)
 
 &copy ("../Makefile.inc", "Makefile.inc");
 system ("$Bin/Makefile.PL");
-
+system ('make main.x');
 
 
 

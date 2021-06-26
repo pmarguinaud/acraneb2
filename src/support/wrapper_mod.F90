@@ -111,7 +111,7 @@ ts=omp_get_wtime()
 DO JCOUNT=1,KCOUNT
 
 
-#ifdef UNDEF
+#ifndef UNDEF
 
 !$OMP PARALLEL DO PRIVATE(JBLK)
 DO JBLK=1,KGPBLK
