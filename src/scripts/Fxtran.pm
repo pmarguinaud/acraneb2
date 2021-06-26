@@ -1167,7 +1167,7 @@ sub fxtran
       use File::stat;
       return unless (-f $f);
 
-      my @cmd = (qw (fxtran -construct-tag -no-cpp -no-include), @opts, $f);
+      my @cmd = (qw (fxtran -construct-tag -no-cpp -no-include -line-length 256), @opts, $f);
       system (@cmd)
         && die ("`@cmd' failed\n");
 

@@ -7,6 +7,7 @@ use FileHandle;
 use File::Copy;
 use File::Basename;
 use File::stat;
+use File::Path;
 
 sub slurp
 {
@@ -45,16 +46,26 @@ sub copyIfNewer
 sub preProcessIfNewer
 {
   use Inline;
+  use Associate;
   use Fxtran;
 
   my ($f1, $f2) = @_;
 
   if (&newer ($f1, $f2))
     {
+      &mkpath ('tmp');
+
       print "Preprocess $f1\n";
       my $d = &Fxtran::fxtran (location => $f1);
+
       &Inline::inlineContainedSubroutines ($d);
+      'FileHandle'->new (">tmp/inlineContainedSubroutines.$f2")->print ($d->textContent ());
+
+      &Associate::resolveAssociates ($d);
+      'FileHandle'->new (">tmp/resolveAssociates.$f2")->print ($d->textContent ());
+
       'FileHandle'->new (">$f2")->print ($d->textContent ());
+
       &Fxtran::intfb ($f2);
     }
 }
@@ -73,18 +84,5 @@ for my $f (@compute)
   {
     &preProcessIfNewer ("../compute/$f", $f);
   }
-
-
-__END__
-
-cd compile
-../../util/finddeps.sh > Makefile_deps.mk
-
-for f in "${compute[@]}"
-do
-
-done
-
-
 
 
