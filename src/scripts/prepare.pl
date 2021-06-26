@@ -81,6 +81,9 @@ for my $f (@compute)
   }
 
 &copy ("../Makefile.inc", "Makefile.inc");
+system ("$Bin/Makefile.PL");
+
+
 
 
 
