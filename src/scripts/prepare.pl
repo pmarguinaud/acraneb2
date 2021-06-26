@@ -9,21 +9,6 @@ use File::Basename;
 use File::stat;
 use File::Path;
 
-sub slurp
-{
-  my $f = shift;
-  my $fh = 'FileHandle'->new ("<$f");
-  $fh or return '';
-  local $/ = undef;
-  return <$fh>;
-}
-
-sub cmp
-{
-  my ($f1, $f2)  = @_;
-  return &slurp ($f1) ne &slurp ($f2);
-}
-
 sub newer
 {
   my ($f1, $f2)  = @_;
@@ -43,6 +28,18 @@ sub copyIfNewer
     }
 }
 
+sub saveToFile
+{
+  my ($x, $f) = @_;
+
+  unless (-d (my $d = &dirname ($f)))
+    {
+      &mkpath ($d);
+    }
+
+  'FileHandle'->new (">$f")->print ($x->textContent ());
+}
+
 sub preProcessIfNewer
 {
   use Inline;
@@ -53,16 +50,14 @@ sub preProcessIfNewer
 
   if (&newer ($f1, $f2))
     {
-      &mkpath ('tmp');
-
       print "Preprocess $f1\n";
       my $d = &Fxtran::fxtran (location => $f1);
 
       &Inline::inlineContainedSubroutines ($d);
-      'FileHandle'->new (">tmp/inlineContainedSubroutines.$f2")->print ($d->textContent ());
+      &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
 
       &Associate::resolveAssociates ($d);
-      'FileHandle'->new (">tmp/resolveAssociates.$f2")->print ($d->textContent ());
+      &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 
@@ -84,5 +79,9 @@ for my $f (@compute)
   {
     &preProcessIfNewer ("../compute/$f", $f);
   }
+
+&copy ("../Makefile.inc", "Makefile.inc");
+
+
 
 

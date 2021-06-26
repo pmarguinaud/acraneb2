@@ -1,4 +1,4 @@
-#!/home/gmap/mrpm/marguina/install/perl-5.32.0/bin/perl -w
+#!/usr/bin/perl -w
 #
 
 use FileHandle;
@@ -8,6 +8,8 @@ use lib $Bin;
 use Fxtran;
 
 use strict;
+
+my @sys = qw (OMP_LIB CUDAFOR);
 
 sub slurp
 {
@@ -21,11 +23,14 @@ sub deps
 {
   my $f = shift;
 
+  my %sys = map { ($_, 1) } @sys;
+
   unless ($deps{$f})
     {
       my $code = &slurp ($f);
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
-      my @use = ($code =~ m/\n\s*use\s+(\w+)/gomis);
+      my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
+      @use = grep { ! $sys{$_} } @use;
       my @mod = map { lc ($_) . '.o' } @use;
       $deps{$f} = [@mod, @inc];
    }
@@ -37,8 +42,8 @@ sub kind
 {
   my $f = shift;
   my $code = &slurp ($f);
-  my ($kind) = ($code =~ m/^(PROGRAM|SUBROUTINE|MODULE)/goms);
-  return $kind;
+  my ($kind) = ($code =~ m/^(PROGRAM|SUBROUTINE|MODULE)/igoms);
+  return uc ($kind);
 }
 
 my $fh = 'FileHandle'->new (">Makefile");
