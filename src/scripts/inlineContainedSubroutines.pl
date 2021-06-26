@@ -309,15 +309,28 @@ sub inlineContainedSubroutine
 
 }
 
-my ($f1, @n2) = @ARGV;
+my ($f1) = @ARGV;
+
 
 my $d1 = &Fxtran::fxtran (location => $f1);
+
+
+my @n2 = &f ('.//f:program-unit//f:program-unit/f:subroutine-stmt/f:subroutine-N/f:N/f:n/text ()', $d1);
 
 for my $n2 (@n2)
   {
     &inlineContainedSubroutine ($d1, $n2);
   }
 
+for (&f ('.//f:program-unit//f:program-unit', $d1))
+  {
+    $_->unbindNode ();
+  }
+
+for (&f ('.//f:program-unit//f:contains-stmt', $d1))
+  {
+    $_->unbindNode ();
+  }
 
 'FileHandle'->new (">$f1.new")->print ($d1->textContent ());
 
