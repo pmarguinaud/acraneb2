@@ -3,14 +3,32 @@
 set -x
 set -e
 
-cd ../data
+
+if [ 0 -eq 1 ]
+then
+
+for f in acraneb2.F90 acraneb_solvt.F90 acraneb_coeft.F90 acraneb_transt.F90
+do
+  ./scripts/copyIfNewer.pl compile.gpu/$f compile.cpu/$f
+done
+
+fi
 
 
 
 for arch in cpu gpu
 do
+  ./scripts/compile.pl $arch
+done
 
-  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 4 --ncount 1 --save > stdeo.$arch 2>&1
+cd ../data
+
+for arch in cpu gpu
+do
+
+  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 4 --ncount 1 --save --check  #> stdeo.$arch 2>&1
+# ../src/compile.$arch/main.x  --nproma 32 --ngpblk 1 --ncount 1 --save --check  #> stdeo.$arch 2>&1
+# ../src/compile.$arch/main.x  --nproma  1 --ngpblk 1 --ncount 1 --save > stdeo.$arch 2>&1
   
   for f in *.dat
   do
@@ -19,13 +37,7 @@ do
 
 done
 
+exit 
 
-
-exit
-
-for f in *.dat
-do
-  diff $f.ref $f
-done
-
+vimdiff  -c 'set diffopt+=iwhite'  stdeo.*
 

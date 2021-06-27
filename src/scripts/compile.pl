@@ -95,8 +95,8 @@ for my $f (@compute)
   }
 
 &copy ("../Makefile.$arch", "Makefile.inc");
-system ("$Bin/Makefile.PL");
-system ('make main.x');
+system ("$Bin/Makefile.PL") and die;
+system ('make -j4 main.x') and die;
 
 
 
