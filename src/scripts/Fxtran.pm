@@ -1306,7 +1306,7 @@ sub intfb
   
   for (&f ('.//f:C', $doc))
     {
-      next if ($_->textContent =~ m/^!\$acc/o);
+      next if ($_->textContent =~ m/^!\$acc\s+routine/o);
       $_->unbindNode ();
     }
   

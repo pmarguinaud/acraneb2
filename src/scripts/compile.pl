@@ -63,8 +63,11 @@ sub preProcessIfNewer
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
-#     &Blocks::addBlocks ($d);
-#     &saveToFile ($d, "tmp/addBlocks/$f2");
+      &Blocks::addBlocks ($d);
+      &saveToFile ($d, "tmp/addBlocks/$f2");
+
+      &Blocks::addDirectives ($d);
+      &saveToFile ($d, "tmp/addDirectives/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 
@@ -72,10 +75,14 @@ sub preProcessIfNewer
     }
 }
 
+my $arch = shift;
+
 my @compute = map { &basename ($_) } <compute/*.F90>;
 my @support = map { &basename ($_) } <support/*.F90>;
 
-chdir ('compile');
+&mkpath ("compile.$arch");
+
+chdir ("compile.$arch");
 
 for my $f (@support)
   {
@@ -87,7 +94,7 @@ for my $f (@compute)
     &preProcessIfNewer ("../compute/$f", $f);
   }
 
-&copy ("../Makefile.inc", "Makefile.inc");
+&copy ("../Makefile.$arch", "Makefile.inc");
 system ("$Bin/Makefile.PL");
 system ('make main.x');
 
