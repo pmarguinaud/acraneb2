@@ -8,6 +8,9 @@ use File::Copy;
 use File::Basename;
 use File::stat;
 use File::Path;
+use Getopt::Long;
+
+my %opts;
 
 sub newer
 {
@@ -75,28 +78,43 @@ sub preProcessIfNewer
     }
 }
 
-my $arch = shift;
+my @opts_f = qw (update compile);
+my @opts_s = qw (arch);
+
+&GetOptions
+(
+  map ({ ($_,     \$opts{$_}) } @opts_f),
+  map ({ ("$_=s", \$opts{$_}) } @opts_s),
+);
 
 my @compute = map { &basename ($_) } <compute/*.F90>;
 my @support = map { &basename ($_) } <support/*.F90>;
 
-&mkpath ("compile.$arch");
+&mkpath ("compile.$opts{arch}");
 
-chdir ("compile.$arch");
+chdir ("compile.$opts{arch}");
 
-for my $f (@support)
+if ($opts{update})
   {
-    &copyIfNewer ("../support/$f", $f);
+    for my $f (@support)
+      {
+        &copyIfNewer ("../support/$f", $f);
+      }
+    
+    for my $f (@compute)
+      {
+        &preProcessIfNewer ("../compute/$f", $f);
+      }
+
+    &copy ("../Makefile.$opts{arch}", "Makefile.inc");
+
+    system ("$Bin/Makefile.PL") and die;
   }
 
-for my $f (@compute)
+if ($opts{compile})
   {
-    &preProcessIfNewer ("../compute/$f", $f);
+    system ('make -j4 main.x') and die;
   }
-
-&copy ("../Makefile.$arch", "Makefile.inc");
-system ("$Bin/Makefile.PL") and die;
-system ('make -j4 main.x') and die;
 
 
 

@@ -18,7 +18,7 @@ fi
 
 for arch in cpu gpu
 do
-  ./scripts/compile.pl $arch
+  ./scripts/compile.pl --arch $arch --update --compile
 done
 
 cd ../data

@@ -243,7 +243,7 @@ sub addDirectives
       # Local arrays 
   
       my @la = sort grep { ! $arg{$_} } 
-               map { $_->textContent } &f ('.//f:EN-decl[./f:array-spec]/f:EN-N/f:N/f:n/text ()', $pu);
+               map { $_->textContent } &f ('.//f:T-decl-stmt//f:EN-decl[./f:array-spec]/f:EN-N/f:N/f:n/text ()', $pu);
       
       my @stmt = &f ('.//f:T-decl-stmt|.//f:include', $pu);
       my $stmt = $stmt[-1];
