@@ -67,9 +67,12 @@ sub preProcessIfNewer
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
-#     &Blocks::addBlocks ($d);
-#     &saveToFile ($d, "tmp/addBlocks/$f2");
-
+      unless ($opts{'single-block'})
+        {
+          &Blocks::addBlocks ($d);
+          &saveToFile ($d, "tmp/addBlocks/$f2");
+        }
+ 
       if ($opts{'kernels'})
         {
           &Blocks::exchangeJlonJlevLoops ($d);
@@ -77,11 +80,17 @@ sub preProcessIfNewer
         }
       else
         {
-#         &Blocks::addParallelLoopDirectives ($d);
+          if ($opts{'single-block'})
+            {
+              &SingleBlock::hoistJlonLoops ($d);
+              &SingleBlock::addParallelLoopDirectives ($d);
+            }
+          else
+            {
+              &Blocks::addParallelLoopDirectives ($d);
+            }
         }
 
-      &SingleBlock::hoistJlonLoops ($d);
-      &SingleBlock::addParallelLoopDirectives ($d);
 
       &Blocks::addDataDirectives ($d);
       &saveToFile ($d, "tmp/addDirectives/$f2");
@@ -92,7 +101,7 @@ sub preProcessIfNewer
     }
 }
 
-my @opts_f = qw (update compile kernels);
+my @opts_f = qw (update compile kernels single-block);
 my @opts_s = qw (arch);
 
 &GetOptions

@@ -18,7 +18,7 @@ git=/gpfsstore/rech/jau/ufh62jk/install/git-2.32.0/bin/git
 echo "============="
 
 
-./scripts/compile.pl --arch gpu --update  --compile
+./scripts/compile.pl --arch gpu --update  --compile --single-block
 
 
 if [ 0 -eq 1 ]
