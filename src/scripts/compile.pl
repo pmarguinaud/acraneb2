@@ -69,7 +69,17 @@ sub preProcessIfNewer
       &Blocks::addBlocks ($d);
       &saveToFile ($d, "tmp/addBlocks/$f2");
 
-      &Blocks::addDirectives ($d);
+      if (1)
+        {
+          &Blocks::addParallelLoopDirectives ($d);
+        }
+      else
+        {
+          &Blocks::exchangeJlonJlevLoops ($d);
+          &Blocks::addKernelDirectives ($d);
+        }
+
+      &Blocks::addDataDirectives ($d);
       &saveToFile ($d, "tmp/addDirectives/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());

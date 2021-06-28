@@ -180,7 +180,7 @@ EOF
   
 }
 
-sub addDirectives
+sub addParallelLoopDirectives
 {
   my $d = shift;
 
@@ -220,6 +220,43 @@ sub addDirectives
   
   
     }
+
+}
+
+sub addKernelDirectives
+{
+  my $d = shift;
+  
+  my @pu = &f ('./f:object/f:file/f:program-unit', $d);
+  
+  for my $pu (@pu)
+    {
+      my @do = &f ('.//f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text()="JBLK"]', $d);
+  
+      for my $do (@do)
+        {
+          my %p;
+  
+          my $sp = $do->previousSibling;
+          ($sp = $sp->textContent) =~ s/^\s*\n//o;
+  
+          $do->parentNode->insertBefore (&n ('<C>!$acc kernels default (present)</C>'), $do);
+          $do->parentNode->insertBefore (&t ("\n$sp"), $do);
+  
+          $do->parentNode->insertAfter (&n ('<C>!$acc end kernels</C>'), $do);
+          $do->parentNode->insertAfter (&t ("\n$sp"), $do);
+  
+        }
+  
+  
+    }
+}
+
+sub addDataDirectives
+{
+  my $d = shift;
+  
+  my @pu = &f ('./f:object/f:file/f:program-unit', $d);
   
   for my $pu (@pu)
     {
@@ -291,6 +328,63 @@ sub addDirectives
   
     }
 
+}
+
+sub exchangeJlonJlevLoops
+{
+  my $d = shift;
+
+  my @pu = &f ('./f:object/f:file/f:program-unit', $d);
+
+  for my $pu (@pu)
+    {
+      my @do_jlon = &f ('.//f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text()="JLON"]' .
+                        '[./f:do-construct/f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()="JLEV"]/f:do-stmt', $d);
+
+      for my $do_jlon (@do_jlon)
+        {
+          my @do_jlev = &f ('../f:do-construct/f:do-stmt[./f:do-V/f:named-E/f:N/f:n/text()="JLEV"]', $do_jlon);
+          my $do_jlev = $do_jlev[0]->cloneNode (1);
+          for my $do_jlev (@do_jlev)
+            {
+              $do_jlev->replaceNode ($do_jlon->cloneNode (1));
+            }
+          $do_jlon->replaceNode ($do_jlev);
+        }
+    }
+}
+
+
+sub mergeKernels
+{
+
+  my $d = shift;
+  
+  my @pu = &f ('./f:object/f:file/f:program-unit', $d);
+  
+  for my $pu (@pu)
+    {
+  
+      my @end = &f ('./f:C[text ()="!$acc end kernels"]', $pu);
+  
+      for my $end (@end)
+        {
+          my @n = &f ('following-sibling::node ()', $end);
+          for my $n (@n)
+            {
+              if (($n->nodeName eq 'C') && ($n->textContent eq '!$acc kernels'))
+                {
+                  $end->unbindNode ();
+                  $n->unbindNode ();
+                  last;
+                }
+              last unless ($n->nodeName eq '#text');
+            }
+        }
+  
+  
+  
+    }
 }
 
 1;
