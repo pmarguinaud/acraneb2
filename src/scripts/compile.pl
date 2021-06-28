@@ -50,6 +50,7 @@ sub preProcessIfNewer
   use Associate;
   use Fxtran;
   use Blocks;
+  use SingleBlock;
 
   my ($f1, $f2) = @_;
 
@@ -66,8 +67,8 @@ sub preProcessIfNewer
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
-      &Blocks::addBlocks ($d);
-      &saveToFile ($d, "tmp/addBlocks/$f2");
+#     &Blocks::addBlocks ($d);
+#     &saveToFile ($d, "tmp/addBlocks/$f2");
 
       if ($opts{'kernels'})
         {
@@ -76,8 +77,11 @@ sub preProcessIfNewer
         }
       else
         {
-          &Blocks::addParallelLoopDirectives ($d);
+#         &Blocks::addParallelLoopDirectives ($d);
         }
+
+      &SingleBlock::hoistJlonLoops ($d);
+      &SingleBlock::addParallelLoopDirectives ($d);
 
       &Blocks::addDataDirectives ($d);
       &saveToFile ($d, "tmp/addDirectives/$f2");

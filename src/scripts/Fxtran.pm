@@ -1258,6 +1258,12 @@ sub intfb
   
   for my $pu (@pu)
     {
+
+      for (&f ('.//f:program-unit', $pu))
+        {
+          $_->unbindNode ();
+        }
+
       my $stmt = $pu->firstChild;
   
       (my $kind = $stmt->nodeName ()) =~ s/-stmt$//o;
@@ -1316,6 +1322,14 @@ sub intfb
     {
       $_->unbindNode ();
     }
+
+  # Strip defines
+
+  for (&f ('.//f:cpp[starts-with (text (), "#define ")]', $doc))
+    {
+      $_->unbindNode ();
+    }
+   
   
   # Strip empty lines
   

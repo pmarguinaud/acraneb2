@@ -44,6 +44,15 @@ sub getShapeSpecList
   return $sslt;
 }
 
+sub getTypeSpec
+{
+  my ($var, $doc) = @_;
+  
+  my ($ts) = &f ('.//f:T-decl-stmt[.//f:EN-decl/f:EN-N/f:N/f:n/text ()="' . $var . '"]/f:_T-spec_/node ()', $doc);
+
+  return $ts;
+}
+
 sub addBlocks
 {
   my $doc = shift;
@@ -265,14 +274,16 @@ sub addDataDirectives
       my @arg = map { $_->textContent } &f ('.//f:dummy-arg-LT/f:arg-N/f:N/f:n/text ()', $pu);
       my %arg = map { ($_, 1) } @arg;
   
-      # Keep those which are arrays in @aa
+      # Keep those which are arrays or derived types in @aa
   
       my @aa;
   
       for my $arg (@arg)
         {
           my $as = &getShapeSpecList ($arg, $pu);
-          push @aa, $arg if ($as);
+          my $ts = &getTypeSpec ($arg, $pu);
+          
+          push @aa, $arg if ($as || $ts->nodeName eq 'derived-T-spec');
         }
   
       @aa = sort @aa;
@@ -303,7 +314,7 @@ sub addDataDirectives
           $nacc++;
         }
   
-      # Declare argument arrays as present
+      # Declare arrays & derived type arguments as present
      
       while (@aa)
         {
