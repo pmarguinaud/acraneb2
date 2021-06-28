@@ -69,14 +69,14 @@ sub preProcessIfNewer
       &Blocks::addBlocks ($d);
       &saveToFile ($d, "tmp/addBlocks/$f2");
 
-      if (1)
-        {
-          &Blocks::addParallelLoopDirectives ($d);
-        }
-      else
+      if ($opts{'kernels'})
         {
           &Blocks::exchangeJlonJlevLoops ($d);
           &Blocks::addKernelDirectives ($d);
+        }
+      else
+        {
+          &Blocks::addParallelLoopDirectives ($d);
         }
 
       &Blocks::addDataDirectives ($d);
@@ -88,7 +88,7 @@ sub preProcessIfNewer
     }
 }
 
-my @opts_f = qw (update compile);
+my @opts_f = qw (update compile kernels);
 my @opts_s = qw (arch);
 
 &GetOptions

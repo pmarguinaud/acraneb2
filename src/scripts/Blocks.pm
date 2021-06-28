@@ -210,7 +210,7 @@ sub addParallelLoopDirectives
   
           my $sp = $do->previousSibling;
           ($sp = $sp->textContent) =~ s/^\s*\n//o;
-          $do->parentNode->insertBefore (&n ('<C>!$acc parallel loop gang vector collapse (2) vector_length (KLON) '
+          $do->parentNode->insertBefore (&n ('<C>!$acc parallel loop gang vector collapse (2) '
                                            . (@p ? 'private (' . join (', ', @p) . ') ' : '')
                                            . 'default (none)'
                                            . '</C>'), $do);
