@@ -18,7 +18,7 @@ git=/gpfsstore/rech/jau/ufh62jk/install/git-2.32.0/bin/git
 echo "============="
 
 
-./scripts/compile.pl --arch gpu --update  --compile --single-block
+./scripts/compile.pl --arch gpu --update  --compile 
 
 
 if [ 0 -eq 1 ]
@@ -36,14 +36,25 @@ fi
 
 cd ../data
 
-for i in $(seq 5)
+for i in $(seq 1)
 do
-../src/compile.gpu/main.x --nproma 20480 --ncount 10 --ngpblk 1 --check
+../src/compile.gpu/main.x --nproma 20480 --ncount 10 --ngpblk   1 --check
 done
 
 echo "============="
 
-for i in $(seq 5)
+../src/compile.gpu/main.x --nproma  4096 --ncount 10 --ngpblk   5 --check
+../src/compile.gpu/main.x --nproma  2048 --ncount 10 --ngpblk  10 --check
+../src/compile.gpu/main.x --nproma  1024 --ncount 10 --ngpblk  20 --check
+../src/compile.gpu/main.x --nproma   512 --ncount 10 --ngpblk  40 --check
+../src/compile.gpu/main.x --nproma   256 --ncount 10 --ngpblk  80 --check
+../src/compile.gpu/main.x --nproma   128 --ncount 10 --ngpblk 160 --check
+../src/compile.gpu/main.x --nproma    64 --ncount 10 --ngpblk 320 --check
+../src/compile.gpu/main.x --nproma    32 --ncount 10 --ngpblk 640 --check
+
+echo "============="
+
+for i in $(seq 1)
 do
-../src/small_kernels/main --nproma 20480 --ncount 10 --ngpblk 1 --check
+../src/small_kernels/main --nproma 20480 --ncount 10 --ngpblk   1 --check
 done
