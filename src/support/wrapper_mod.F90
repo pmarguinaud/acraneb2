@@ -403,7 +403,7 @@ NBLK = SIZE (X1, 2)
 IF (LDH2D) THEN
 !$acc parallel loop present (X1_) copyin (X1) collapse (2)
 DO JBLK = 1, NBLK
-  DO JLON = 1, NBLK
+  DO JLON = 1, JLON
     X1_ ((JBLK-1)*NLON+JLON) = X1 (JLON, JBLK)
   ENDDO
 ENDDO
@@ -411,7 +411,7 @@ ENDDO
 ELSE
 !$acc parallel loop present (X1_) copyout (X1) collapse (2)
 DO JBLK = 1, NBLK
-  DO JLON = 1, NBLK
+  DO JLON = 1, JLON
     X1 (JLON, JBLK) = X1_ ((JBLK-1)*NLON+JLON) 
   ENDDO
 ENDDO
