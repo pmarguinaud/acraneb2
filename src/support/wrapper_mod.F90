@@ -231,6 +231,16 @@ ENDDO
 PRINT *, " ZTD = ", ZTD, ZTD / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
 PRINT *, " ZTC = ", ZTC, ZTC / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
 
+! check output
+IF ( LCHECK ) THEN
+	CALL CHECK_ACRANEB2(KLON,KLEV, KGPBLK, &
+	 & PFRSO,PFRTH, &
+	 & PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
+ENDIF
+
+
+
+
 
 ZTC = 0.
 ZTD = 0.
@@ -314,28 +324,34 @@ INTEGER :: JLON, JBLK, NLON, NBLK, I, NI, J, NJ
 
 NLON = SIZE (X3, 1)
 NI   = SIZE (X3, 2)
-NI   = SIZE (X3, 3)
+NJ   = SIZE (X3, 3)
 NBLK = SIZE (X3, 4)
 
-!$acc data copyin (X3) present (X3_) if (LDH2D)
-!$acc data copyout (X3) present (X3_) if (.NOT. LDH2D)
-!$acc kernels default (present) 
+IF (LDH2D) THEN
+!$acc parallel loop present (X3_) copyin (X3) collapse (4)
 DO JBLK = 1, NBLK
   DO I = 1, NI
   DO J = 1, NJ
     DO JLON = 1, NLON
-      IF (LDH2D) THEN
-        X3_ ((JBLK-1)*NLON+JLON,I,J) = X3 (JLON, I, J, JBLK)
-      ELSE
-        X3 (JLON, I, J, JBLK) = X3_ ((JBLK-1)*NLON+JLON,I,J) 
-      ENDIF
+      X3_ ((JBLK-1)*NLON+JLON,I,J) = X3 (JLON, I, J, JBLK)
     ENDDO
   ENDDO
   ENDDO
 ENDDO
-!$acc end kernels
-!$acc end data
-!$acc end data
+!$acc end parallel loop
+ELSE
+!$acc parallel loop present (X3_) copyout (X3) collapse (4)
+DO JBLK = 1, NBLK
+  DO I = 1, NI
+  DO J = 1, NJ
+    DO JLON = 1, NLON
+      X3 (JLON, I, J, JBLK) = X3_ ((JBLK-1)*NLON+JLON,I,J) 
+    ENDDO
+  ENDDO
+  ENDDO
+ENDDO
+!$acc end parallel loop
+ENDIF
 
 END SUBROUTINE
 
@@ -350,23 +366,27 @@ NLON = SIZE (X2, 1)
 NI   = SIZE (X2, 2)
 NBLK = SIZE (X2, 3)
 
-!$acc data copyin (X2) present (X2_) if (LDH2D)
-!$acc data copyout (X2) present (X2_) if (.NOT. LDH2D)
-!$acc kernels default (present)
+IF (LDH2D) THEN
+!$acc parallel loop present (X2_) copyin (X2) collapse (3)
 DO JBLK = 1, NBLK
   DO I = 1, NI
     DO JLON = 1, NLON
-      IF (LDH2D) THEN
-        X2_ ((JBLK-1)*NLON+JLON,I) = X2 (JLON, I, JBLK)
-      ELSE
-        X2 (JLON, I, JBLK) = X2_ ((JBLK-1)*NLON+JLON,I) 
-      ENDIF
+      X2_ ((JBLK-1)*NLON+JLON,I) = X2 (JLON, I, JBLK)
     ENDDO
   ENDDO
 ENDDO
-!$acc end kernels
-!$acc end data
-!$acc end data
+!$acc end parallel loop
+ELSE
+!$acc parallel loop present (X2_) copyout (X2) collapse (3)
+DO JBLK = 1, NBLK
+  DO I = 1, NI
+    DO JLON = 1, NLON
+      X2 (JLON, I, JBLK) = X2_ ((JBLK-1)*NLON+JLON,I) 
+    ENDDO
+  ENDDO
+ENDDO
+!$acc end parallel loop
+ENDIF
 
 END SUBROUTINE
 
@@ -380,21 +400,23 @@ INTEGER :: JLON, JBLK, NLON, NBLK
 NLON = SIZE (X1, 1)
 NBLK = SIZE (X1, 2)
 
-!$acc data copyin (X1) present (X1_) if (LDH2D) 
-!$acc data copyout (X1) present (X1_) if (.NOT. LDH2D) 
-!$acc kernels default (present)
+IF (LDH2D) THEN
+!$acc parallel loop present (X1_) copyin (X1) collapse (2)
 DO JBLK = 1, NBLK
   DO JLON = 1, NBLK
-    IF (LDH2D) THEN
-      X1_ ((JBLK-1)*NLON+JLON) = X1 (JLON, JBLK)
-    ELSE
-      X1 (JLON, JBLK) = X1_ ((JBLK-1)*NLON+JLON) 
-    ENDIF
+    X1_ ((JBLK-1)*NLON+JLON) = X1 (JLON, JBLK)
   ENDDO
 ENDDO
-!$acc end kernels
-!$acc end data
-!$acc end data
+!$acc end parallel loop
+ELSE
+!$acc parallel loop present (X1_) copyout (X1) collapse (2)
+DO JBLK = 1, NBLK
+  DO JLON = 1, NBLK
+    X1 (JLON, JBLK) = X1_ ((JBLK-1)*NLON+JLON) 
+  ENDDO
+ENDDO
+!$acc end parallel loop
+ENDIF
 
 END SUBROUTINE
 
