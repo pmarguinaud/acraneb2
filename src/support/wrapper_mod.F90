@@ -156,6 +156,13 @@ CALL PREPARE_ACRANEB2(YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,K
  & PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS, &
  & PDAER)
 
+PFRSO     = 9E99;
+PFRTH     = 9E99;
+PFRSODS   = 9E99;
+PFRSOPS   = 9E99;
+PFRSOLU   = 9E99;
+PFRTHDS   = 9E99;
+
 ZTD = 0.
 ZTC = 0.
 
@@ -237,9 +244,6 @@ IF ( LCHECK ) THEN
 	 & PFRSO,PFRTH, &
 	 & PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
 ENDIF
-
-
-
 
 
 ZTC = 0.
@@ -403,7 +407,7 @@ NBLK = SIZE (X1, 2)
 IF (LDH2D) THEN
 !$acc parallel loop present (X1_) copyin (X1) collapse (2)
 DO JBLK = 1, NBLK
-  DO JLON = 1, JLON
+  DO JLON = 1, NLON
     X1_ ((JBLK-1)*NLON+JLON) = X1 (JLON, JBLK)
   ENDDO
 ENDDO
@@ -411,7 +415,7 @@ ENDDO
 ELSE
 !$acc parallel loop present (X1_) copyout (X1) collapse (2)
 DO JBLK = 1, NBLK
-  DO JLON = 1, JLON
+  DO JLON = 1, NLON
     X1 (JLON, JBLK) = X1_ ((JBLK-1)*NLON+JLON) 
   ENDDO
 ENDDO

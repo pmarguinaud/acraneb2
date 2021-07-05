@@ -20,9 +20,9 @@ cd ../data
 
 #xport PGI_ACC_NOTIFY=1
 
-../src/compile.gpu/main.x --nproma    32 --ncount 10 --ngpblk 640 --check
+#../src/compile.gpu/main.x --nproma    32 --ncount  1 --ngpblk   1 --check; exit
 
-exit
+ ../src/compile.gpu/main.x --nproma    32 --ncount 10 --ngpblk 640 --check; exit
 
 ../src/compile.gpu/main.x --nproma  4096 --ncount 10 --ngpblk   5 --check
 ../src/compile.gpu/main.x --nproma  2048 --ncount 10 --ngpblk  10 --check
