@@ -92,6 +92,7 @@ REAL(KIND=JPRB) :: PFRTHDS(KLON,KGPBLK)
 REAL(KIND=JPRB) :: PDAER(KLON,KLEV,6,KGPBLK) 
 
 real(kind=8) :: ts,te
+REAL(KIND=8) :: TSC, TEC, TSD, TED, ZTC, ZTD
 
 INTEGER :: JCOUNT, JBLK, JLON
 
@@ -139,6 +140,8 @@ ENDDO
 
 #else
 
+    TSD = OMP_GET_WTIME ()
+
 !$acc data &
 !$acc   copyin  (YDERDI,YDRIP,YDML_PHY_MF,PAPRS,PAPRSF,PCP,PR,PDELP,PNEB,PQ,PQCO2,PQICE,PQLI,PQO3,PT, &
 !$acc            PALB,PALBDIR,PEMIS,PGELAM,PGEMU,PMU0,PMU0LU,PTS,PDECRD,PCLCT,PDAER) &
@@ -146,6 +149,8 @@ ENDDO
 !$acc            PGDEOTI,PGDEOTI2,PGUEOTI,PGUEOTI2,PGEOLT,PGEOXT, &
 !$acc            PGRPROX,PGMIXP,PGFLUXC,PGRSURF,PSDUR) &
 !$acc   copyout (PFRSO,PFRTH,PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS) 
+
+    TSC = OMP_GET_WTIME ()
 
   CALL ACRANEB2( &
    & YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KGPBLK,KLON,KTDIA,KLEV,KJN,KSTEP, &
@@ -163,7 +168,14 @@ ENDDO
   ! - INPUT 2D x 6
    & PDAER)
 
+    TEC = OMP_GET_WTIME ()
+
 !$acc end data
+
+    TED = OMP_GET_WTIME ()
+
+    ZTC = ZTC + (TEC - TSC)
+    ZTD = ZTD + (TED - TSD)
 
 #endif
 
@@ -172,6 +184,10 @@ ENDDO
 te=omp_get_wtime()
 write (*,'(A,F8.2,A)') 'elapsed time : ',te-ts,' s'
 write (*,'(A,F8.4,A)') '          i.e. ',1000.*(te-ts)/(KLON*KGPBLK)/KCOUNT,' ms/gp'
+
+PRINT *, " ZTD = ", ZTD, ZTD / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
+PRINT *, " ZTC = ", ZTC, ZTC / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
+
 
 ! check output
 IF ( LCHECK ) THEN
