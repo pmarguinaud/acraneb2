@@ -1,4 +1,10 @@
 #!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --account=hun@gpu
+#SBATCH --time 00:25:00
+#SBATCH --exclusive
+#SBATCH --gres=gpu:2
+
 
 set -x
 set -e
@@ -26,7 +32,7 @@ cd ../data
 for arch in cpu gpu
 do
 
-  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 4 --ncount 1 --save --check  #> stdeo.$arch 2>&1
+  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 4 --ncount 1 --save --check  --heapsize 100 #> stdeo.$arch 2>&1
 # ../src/compile.$arch/main.x  --nproma 32 --ngpblk 1 --ncount 1 --save --check  #> stdeo.$arch 2>&1
 # ../src/compile.$arch/main.x  --nproma  1 --ngpblk 1 --ncount 1 --save > stdeo.$arch 2>&1
   
