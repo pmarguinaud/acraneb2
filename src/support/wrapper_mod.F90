@@ -166,8 +166,8 @@ te=omp_get_wtime()
 write (*,'(A,F8.2,A)') 'elapsed time : ',te-ts,' s'
 write (*,'(A,F8.4,A)') '          i.e. ',1000.*(te-ts)/(KLON*KGPBLK)/KCOUNT,' ms/gp'
 
-PRINT *, " ZTD = ", ZTD, ZTD / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
-PRINT *, " ZTC = ", ZTC, ZTC / REAL ((KLON*KGPBLK)/KCOUNT, JPRB)
+PRINT *, " ZTD = ", ZTD, ZTD / REAL (KLON*KGPBLK*KCOUNT, JPRB)
+PRINT *, " ZTC = ", ZTC, ZTC / REAL (KLON*KGPBLK*KCOUNT, JPRB)
 
 
 ! check output

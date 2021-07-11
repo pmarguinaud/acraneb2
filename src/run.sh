@@ -9,6 +9,8 @@
 set -x
 set -e
 
+cd /gpfswork/rech/jau/ufh62jk/acraneb2/openacc-vector/src
+
 
 if [ 0 -eq 1 ]
 then

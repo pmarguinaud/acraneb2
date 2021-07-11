@@ -54,7 +54,3 @@ echo "============="
 
 echo "============="
 
-for i in $(seq 1)
-do
-../src/small_kernels/main --nproma 20480 --ncount 10 --ngpblk   1 --check
-done
