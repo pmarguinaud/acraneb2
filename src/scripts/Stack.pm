@@ -87,7 +87,7 @@ sub addStack
   $exec->parentNode->insertBefore (&t ("\n"), $exec);
   $exec->parentNode->insertBefore (&t ("\n"), $exec);
 
-  my @KLON = qw (YDGEOMETRY%YRDIM%NPROMA KPROMA KPROMB);
+  my @KLON = qw (KLON);
 
   for my $KLON (@KLON)
     {
