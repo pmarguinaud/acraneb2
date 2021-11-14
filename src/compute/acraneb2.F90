@@ -286,6 +286,7 @@ REAL(KIND=JPRB) :: ZARGLI,ZTRLI,ZEARRT,ZDEBL,ZW,&
 #include "acraneb_solvs.intfb.h"
 #include "acraneb_solvt.intfb.h"
 #include "acraneb_solvt3.intfb.h"
+#include "abor1.intfb.h"
 
 !-------------------------------------------------------------------------------
 

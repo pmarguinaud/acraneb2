@@ -77,15 +77,45 @@ sub addStack
   $decl->parentNode->insertAfter (&t ("\n"), $decl);
 
   
-  my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt', $d);
+  my ($noexec) = do 
+  {
+    my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt', $d);
+    my @prev = &F ('preceding::*', $exec);
 
-  $exec->parentNode->insertBefore (&t ("\n"), $exec);
-  $exec->parentNode->insertBefore (&t ("\n"), $exec);
-  $exec->parentNode->insertBefore (&n (
+    my $prev;
+    for my $p (reverse (@prev))
+      {
+        next if ($p->nodeName eq '#text');
+        next if ($p->nodeName eq 'C');
+        $prev = $p;
+        last;
+      }
+
+    my @anc = &F ('ancestor::*', $prev);
+
+    for my $anc (reverse (@anc))
+      {
+        if (($anc->nodeName =~ m/-(?:construct|stmt)$/o) || ($anc->nodeName eq 'include'))
+          {
+            $prev = $anc;
+          }
+      }
+
+    $prev
+  };
+
+  my $C = &n ("<C/>");
+
+  $noexec->parentNode->insertAfter (&t ("\n"), $noexec);
+  $noexec->parentNode->insertAfter ($C, $noexec);
+
+  $C->parentNode->insertBefore (&t ("\n"), $C);
+  $C->parentNode->insertBefore (&t ("\n"), $C);
+  $C->parentNode->insertBefore (&n (
 '<a-stmt><E-1><named-E><N><n>YLSTACK</n></N></named-E></E-1><a>=</a>' .
-'<E-2><named-E><N><n>YDSTACK</n></N></named-E></E-2></a-stmt>'), $exec);
-  $exec->parentNode->insertBefore (&t ("\n"), $exec);
-  $exec->parentNode->insertBefore (&t ("\n"), $exec);
+'<E-2><named-E><N><n>YDSTACK</n></N></named-E></E-2></a-stmt>'), $C);
+  $C->parentNode->insertBefore (&t ("\n"), $C);
+  $C->parentNode->insertBefore (&t ("\n"), $C);
 
   my @KLON = qw (KLON);
 
@@ -115,11 +145,13 @@ sub addStack
               $temp->parentNode->insertAfter (&t ("\n"), $temp);
             }
       
-          $exec->parentNode->insertBefore (&t ("alloc ($n)\n"), $exec);
+          $C->parentNode->insertBefore (&t ("alloc ($n)\n"), $C);
 
         }
 
     }
+
+  $C->unbindNode ();
 
 }
 

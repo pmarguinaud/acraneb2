@@ -85,6 +85,9 @@ REAL(KIND=JPRB),INTENT(INOUT)  :: PFDC(KLON,0:KLEV)
 REAL(KIND=JPRB),INTENT(INOUT)  :: PFMC(KLON,0:KLEV)
 REAL(KIND=JPRB),INTENT(INOUT)  :: PFDN(KLON,0:KLEV)
 REAL(KIND=JPRB),INTENT(INOUT)  :: PFMN(KLON,0:KLEV)
+
+#include "abor1.intfb.h"
+
 !-----------------------------------------------------------------------
 
 !     LOCAL REAL SCALARS

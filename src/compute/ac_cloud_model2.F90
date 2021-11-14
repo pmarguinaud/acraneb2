@@ -137,6 +137,8 @@ REAL(KIND=JPRB),INTENT(OUT) :: PUSAL   (KLON,KLEV)
 REAL(KIND=JPRB),INTENT(OUT) :: PUSBI   (KLON,KLEV)
 REAL(KIND=JPRB),INTENT(OUT) :: PUSBL   (KLON,KLEV)
 
+#include "abor1.intfb.h"
+
 !-------------------------------------------------------------------------------
 
 INTEGER(KIND=JPIM) :: IAUCR
