@@ -18,7 +18,8 @@ cd ../data
 for arch in gpu
 do
 
-  ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+# ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 640 --ncount 10 --save --check  
   
   for f in *.dat
   do
