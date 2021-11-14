@@ -23,7 +23,9 @@ do
   for f in *.dat
   do
     mv $f $f.$arch
+    set +e
     diff $f.$arch ref/$f.$arch
+    set -e
   done
 
 done
