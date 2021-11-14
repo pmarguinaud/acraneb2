@@ -15,14 +15,15 @@ export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
-for arch in gpu
+for arch in cpu
 do
 
-  ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 10 --ncount 1 --save --check  
   
   for f in *.dat
   do
     mv $f $f.$arch
+    diff $f.$arch ref/$f.$arch
   done
 
 done

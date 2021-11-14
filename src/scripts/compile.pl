@@ -52,6 +52,7 @@ sub preProcessIfNewer
   use Blocks;
   use SingleBlock;
   use Vector;
+  use Stack;
 
   my ($f1, $f2) = @_;
 
@@ -74,6 +75,8 @@ sub preProcessIfNewer
       &Vector::addDirectives ($d);
       &saveToFile ($d, "tmp/addDirectives/$f2");
 
+      &Stack::addStack ($d);
+      &saveToFile ($d, "tmp/addStack/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 
@@ -91,7 +94,7 @@ my @opts_s = qw (arch);
 );
 
 my @compute = map { &basename ($_) } <compute/*.F90>;
-my @support = map { &basename ($_) } <support/*.F90>;
+my @support = map { &basename ($_) } <support/*>;
 
 &mkpath ("compile.$opts{arch}");
 
