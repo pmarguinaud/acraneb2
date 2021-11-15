@@ -69,8 +69,8 @@ sub preProcessIfNewer
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
-      &Vector::hoistJlonLoops ($d);
-      &saveToFile ($d, "tmp/hoistJlonLoops/$f2");
+#     &Vector::hoistJlonLoops ($d);
+#     &saveToFile ($d, "tmp/hoistJlonLoops/$f2");
 
       &Vector::addDirectives ($d);
       &saveToFile ($d, "tmp/addDirectives/$f2");
