@@ -44,6 +44,15 @@ sub saveToFile
   'FileHandle'->new (">$f.xml")->print ($x->toString ());
 }
 
+sub addSeqDirective
+{
+  my $d = shift;
+  my ($pu) = &F ('./object/file/program-unit', $d);
+  my ($N) = &F ('./subroutine-stmt/subroutine-N', $pu, 1);
+  $pu->insertAfter (&n ("<C>!\$acc routine ($N) seq</C>"), $pu->firstChild);
+  $pu->insertAfter (&t ("\n"), $pu->firstChild);
+}
+
 sub preProcessIfNewer
 {
   use Inline;
@@ -72,8 +81,10 @@ sub preProcessIfNewer
 #     &Vector::hoistJlonLoops ($d);
 #     &saveToFile ($d, "tmp/hoistJlonLoops/$f2");
 
-      &Vector::addDirectives ($d);
-      &saveToFile ($d, "tmp/addDirectives/$f2");
+#     &Vector::addDirectives ($d);
+#     &saveToFile ($d, "tmp/addDirectives/$f2");
+
+      &addSeqDirective ($d);
 
       &Stack::addStack ($d);
       &saveToFile ($d, "tmp/addStack/$f2");

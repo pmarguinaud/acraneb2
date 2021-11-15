@@ -137,14 +137,16 @@ DO JCOUNT=1,KCOUNT
 
     TSC = OMP_GET_WTIME ()
 
-!$acc parallel loop gang private (YLSTACK)
+!$acc parallel loop gang vector private (YLSTACK) collapse (2)
 DO JBLK=1,KGPBLK
+
+  DO JLON = 1, KLON
 
   YLSTACK%L = LOC (PSTACK (1, JBLK))
   YLSTACK%U = YLSTACK%L + ISTSZ * 8 
 
   CALL ACRANEB2( &
-   & YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,KSTEP, &
+   & YDERDI,YDRIP,YDML_PHY_MF,JLON,JLON,KLON,KTDIA,KLEV,KJN,KSTEP, &
   ! - INPUT 2D
    & PAPRS(:,:,JBLK),PAPRSF(:,:,JBLK),PCP(:,:,JBLK),PR(:,:,JBLK),PDELP(:,:,JBLK),PNEB(:,:,JBLK), &
    & PQ(:,:,JBLK),PQCO2(:,:,JBLK),PQICE(:,:,JBLK),PQLI(:,:,JBLK),PQO3(:,:,JBLK),PT(:,:,JBLK), &
@@ -161,6 +163,9 @@ DO JBLK=1,KGPBLK
    & PFRSODS(:,JBLK),PFRSOPS(:,JBLK),PFRSOLU(:,JBLK),PFRTHDS(:,JBLK), &
   ! - INPUT 2D x 6
    & PDAER(:,:,:,JBLK), YLSTACK)
+
+  ENDDO
+
 ENDDO
 !$acc end parallel loop
 
