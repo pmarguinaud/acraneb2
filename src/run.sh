@@ -1,34 +1,25 @@
 #!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --account=hun@gpu
+#SBATCH --time 00:25:00
+#SBATCH --exclusive
+#SBATCH --gres=gpu:1
+
 
 set -x
 set -e
 
+cd /gpfswork/rech/jau/ufh62jk/acraneb2/openacc-kernels/src
 
-if [ 0 -eq 1 ]
-then
-
-for f in acraneb2.F90 acraneb_solvt.F90 acraneb_coeft.F90 acraneb_transt.F90
-do
-  ./scripts/copyIfNewer.pl compile.gpu/$f compile.cpu/$f
-done
-
-fi
-
-
-
-for arch in cpu gpu
-do
-  ./scripts/compile.pl --arch $arch --update --compile
-done
+export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
-for arch in cpu gpu
+for arch in gpu
 do
 
-  ../src/compile.$arch/main.x  --nproma 32 --ngpblk 4 --ncount 1 --save --check  #> stdeo.$arch 2>&1
-# ../src/compile.$arch/main.x  --nproma 32 --ngpblk 1 --ncount 1 --save --check  #> stdeo.$arch 2>&1
-# ../src/compile.$arch/main.x  --nproma  1 --ngpblk 1 --ncount 1 --save > stdeo.$arch 2>&1
+# ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 640 --ncount 10 --save --check  
   
   for f in *.dat
   do
@@ -36,8 +27,4 @@ do
   done
 
 done
-
-exit 
-
-vimdiff  -c 'set diffopt+=iwhite'  stdeo.*
 
