@@ -42,11 +42,14 @@ sub removeListElement
 
 
 
-sub addStack
+sub addStackProgramUnit
 {
-  my $d = shift;
+  my $pu = shift;
 
-  my @call = &F ('.//call-stmt[string(procedure-designator)!="ABOR1" and string(procedure-designator)!="REDUCE"]', $d);
+  my @pu = &F ('ancestor-or-self::program-unit', $pu);
+  my $level = '[count(ancestor::program-unit)=' . scalar (@pu) . ']';
+
+  my @call = &F ('.//call-stmt' . $level . '[string(procedure-designator)!="ABOR1" and string(procedure-designator)!="REDUCE"]', $pu);
 
   for my $call (@call)
     {
@@ -55,21 +58,33 @@ sub addStack
       $argspec->appendChild (&n ("<named-E><N><n>YLSTACK</n></N></named-E>"));
     }
 
-  my ($dummy_arg_lt) = &F ('.//subroutine-stmt/dummy-arg-LT', $d);
+  my ($dummy_arg_lt) = &F ('.//subroutine-stmt' . $level . '/dummy-arg-LT', $pu);
 
   my ($last) = &F ('./arg-N[last()]', $dummy_arg_lt, 1);
 
   $dummy_arg_lt->appendChild (&t (', '));
   $dummy_arg_lt->appendChild (&n ("<arg-N><N><n>YDSTACK</n></N></arg-N>"));
 
-  my ($use) = &F ('.//use-stmt[last()]', $d);
-  $use->parentNode->insertAfter (&n ("<include>#include &quot;<filename>stack.h</filename>&quot;</include>"), $use);
-  $use->parentNode->insertAfter (&t ("\n"), $use);
-  $use->parentNode->insertAfter (&n ("<use-stmt>USE <module-N><N><n>STACK_MOD</n></N></module-N></use-stmt>"), $use);
-  $use->parentNode->insertAfter (&t ("\n"), $use);
+
+  my $tuse;
+
+  if (my ($use) = &F ('.//use-stmt' . $level . '[last()]', $pu))
+    {
+      $tuse = $use;
+    }
+  else
+    {
+      $tuse = $pu->firstChild;
+    }
 
 
-  my ($decl) = &F ('.//T-decl-stmt[.//EN-N[string(.)="?"]]', $last, $d);
+  $tuse->parentNode->insertAfter (&n ("<include>#include &quot;<filename>stack.h</filename>&quot;</include>"), $tuse);
+  $tuse->parentNode->insertAfter (&t ("\n"), $tuse);
+  $tuse->parentNode->insertAfter (&n ("<use-stmt>USE <module-N><N><n>STACK_MOD</n></N></module-N></use-stmt>"), $tuse);
+  $tuse->parentNode->insertAfter (&t ("\n"), $tuse);
+
+
+  my ($decl) = &F ('.//T-decl-stmt' . $level . '[.//EN-N[string(.)="?"]]', $last, $pu);
   $decl->parentNode->insertAfter (&n (
 '<T-decl-stmt><_T-spec_><derived-T-spec>TYPE(<T-N><N><n>STACK</n></N></T-N>)</derived-T-spec></_T-spec_> ' .
 ':: <EN-decl-LT><EN-decl><EN-N><N><n>YDSTACK</n></N></EN-N></EN-decl>' .
@@ -79,7 +94,7 @@ sub addStack
   
   my ($noexec) = do 
   {
-    my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt', $d);
+    my ($exec) = grep { &Fxtran::stmt_is_executable ($_) } &F ('.//ANY-stmt' . $level, $pu);
     my @prev = &F ('preceding::*', $exec);
 
     my $prev;
@@ -121,9 +136,9 @@ sub addStack
 
   for my $KLON (@KLON)
     {
-      my @en_decl = &F ('.//T-decl-stmt[not(string(.//attribute-N)="INTENT")]'
+      my @en_decl = &F ('.//T-decl-stmt[not(string(.//attribute-N)="INTENT")]' . $level
                       . '//EN-decl[./array-spec/shape-spec-LT/shape-spec[string(./upper-bound)="?"]]', 
-                      $KLON, $d);
+                      $KLON, $pu);
       
       for my $en_decl (@en_decl)
         {
@@ -154,5 +169,16 @@ sub addStack
   $C->unbindNode ();
 
 }
+
+sub addStack
+{
+  my $d = shift;
+  my @pu = &F ('.//program-unit', $d);
+  for my $pu (@pu)
+    {
+      &addStackProgramUnit ($pu);
+    }
+}
+
 
 1;

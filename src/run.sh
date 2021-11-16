@@ -9,7 +9,7 @@
 set -x
 set -e
 
-cd /gpfswork/rech/jau/ufh62jk/acraneb2/openacc-vector-stack/src
+cd /gpfswork/rech/jau/ufh62jk/acraneb2/openacc-vector-stack-noinline/src
 
 export NV_ACC_CUDA_HEAPSIZE=64Mb
 

@@ -23,7 +23,7 @@ sub hoistJlonLoops
   
       for my $do (@do)
         {
-          my @doo = &f ('ancestor-or-self::f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()!="?"]', $JLON, $do);
+          my @doo = &f ('ancestor-or-self::f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()!="?"][not(.//f:call-stmt)]', $JLON, $do);
 
 
           my $doo;
@@ -97,34 +97,43 @@ EOF
   
 }
 
-sub addDirectives
+sub addDirectivesProgramUnit
 {
-  my $doc = shift;
+  my $pu = shift;
   
-  my @pu = &f ('./f:object/f:file/f:program-unit', $doc);
-  
+  my @pu = &F ('ancestor-or-self::program-unit', $pu);
+
+  my $level = '[count(ancestor::program-unit)=' . scalar (@pu) . ']';
+
   my ($JLON, $KIDIA, $KFDIA) = ('JLON', 'KIDIA', 'KFDIA');
 
-  for my $pu (@pu)
-    {
-      my @do = &f ('.//f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()="?"]', $JLON, $pu);
+  my @do = &f ('.//f:do-construct[./f:do-stmt/f:do-V/f:named-E/f:N/f:n/text ()="?"]' . $level, $JLON, $pu);
   
-      for my $do (@do)
-        {
-          my $sp = &Fxtran::getIndent ($do);
-          $do->parentNode->insertBefore (&n ('<C>!$acc loop vector</C>'), $do);
-          $do->parentNode->insertBefore (&t ("\n" . (' ' x $sp)), $do);
-        }
-      
-      my ($subroutine) = &f ('./f:subroutine-stmt', $pu);
-
-      my $sp = &Fxtran::getIndent ($subroutine);
-      my ($name) = &f ('./f:subroutine-N/f:N/f:n/text ()', $subroutine, 1);
-      $subroutine->parentNode->insertBefore (&n ("<C>!\$acc routine ($name) vector</C>"), $subroutine);
-      $subroutine->parentNode->insertBefore (&t ("\n" . (' ' x $sp)), $subroutine);
-
+  for my $do (@do)
+    {
+      my $sp = &Fxtran::getIndent ($do);
+      $do->parentNode->insertBefore (&n ('<C>!$acc loop vector</C>'), $do);
+      $do->parentNode->insertBefore (&t ("\n" . (' ' x $sp)), $do);
     }
   
+  my ($subroutine) = &f ('./f:subroutine-stmt', $pu);
+
+  my $sp = &Fxtran::getIndent ($subroutine);
+  my ($name) = &f ('./f:subroutine-N/f:N/f:n/text ()', $subroutine, 1);
+  $subroutine->parentNode->insertAfter (&n ("<C>!\$acc routine ($name) vector</C>"), $subroutine);
+  $subroutine->parentNode->insertAfter (&t ("\n" . (' ' x $sp)), $subroutine);
+
+  
+}
+
+sub addDirectives
+{
+  my $d = shift;
+  my @pu = &F ('.//program-unit', $d);
+  for my $pu (@pu)
+    {
+      &addDirectivesProgramUnit ($pu);
+    }
 }
 
 

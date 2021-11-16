@@ -63,8 +63,8 @@ sub preProcessIfNewer
       my $d = &Fxtran::fxtran (location => $f1);
       &saveToFile ($d, "tmp/$f2");
 
-      &Inline::inlineContainedSubroutines ($d);
-      &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
+#     &Inline::inlineContainedSubroutines ($d);
+#     &saveToFile ($d, "tmp/inlineContainedSubroutines/$f2");
 
       &Associate::resolveAssociates ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");

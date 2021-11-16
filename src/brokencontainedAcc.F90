@@ -1,0 +1,23 @@
+SUBROUTINE TOTO(K)
+
+!$acc routine (TOTO) vector
+
+IMPLICIT NONE
+
+INTEGER :: K
+
+REAL :: Z (K)
+
+CALL FIT1(Z)
+
+CONTAINS
+
+SUBROUTINE FIT1(P)
+
+!$acc routine (FIT1) vector
+
+REAL :: P(K)
+
+END SUBROUTINE FIT1
+
+END SUBROUTINE TOTO
