@@ -62,6 +62,7 @@ sub preProcessIfNewer
   use SingleBlock;
   use Vector;
   use Stack;
+  use Loop;
 
   my ($f1, $f2) = @_;
 
@@ -83,6 +84,9 @@ sub preProcessIfNewer
 
 #     &Vector::addDirectives ($d);
 #     &saveToFile ($d, "tmp/addDirectives/$f2");
+#
+      &Loop::removeJlonLoops ($d);
+      &saveToFile ($d, "tmp/removeJlonLoops/$f2");
 
       &addSeqDirective ($d);
 
