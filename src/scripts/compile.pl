@@ -63,6 +63,7 @@ sub preProcessIfNewer
   use Vector;
   use Stack;
   use Loop;
+  use ReDim;
 
   my ($f1, $f2) = @_;
 
@@ -87,6 +88,9 @@ sub preProcessIfNewer
 #
       &Loop::removeJlonLoops ($d);
       &saveToFile ($d, "tmp/removeJlonLoops/$f2");
+
+      &ReDim::reDim ($d);
+      &saveToFile ($d, "tmp/reDim/$f2");
 
       &addSeqDirective ($d);
 
