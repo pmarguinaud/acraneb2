@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/home/gmap/mrpm/marguina/install/perl-5.32.0/bin/perl -w
 
 use strict;
 use FindBin qw ($Bin);
@@ -126,10 +126,20 @@ if ($opts{update})
         &copyIfNewer ("../support/$f", $f);
       }
     
-    for my $f (@compute)
+    if ($opts{arch} eq 'gpu')
       {
-        &preProcessIfNewer ("../compute/$f", $f);
+        for my $f (@compute)
+          {
+            &preProcessIfNewer ("../compute/$f", $f);
+          }
       }
+   else
+     {
+        for my $f (@compute)
+          {
+            &copyIfNewer ("../compute/$f", $f);
+          }
+     }
 
     &copy ("../Makefile.$opts{arch}", "Makefile.inc");
 

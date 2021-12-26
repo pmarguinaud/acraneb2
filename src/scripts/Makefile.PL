@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/home/gmap/mrpm/marguina/install/perl-5.32.0/bin/perl -w
 #
 
 use FileHandle;
@@ -113,7 +113,7 @@ for my $prg (@prg)
     (my $obj = $prg) =~ s/\.F90$/.o/o;
     $fh->print (<< "EOF");
 $exe: $obj @obj
-	\$(FC) -o $exe $obj @obj
+	\$(FC) -o $exe $obj @obj \$(LIBS)
 
 EOF
   }

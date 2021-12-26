@@ -1,25 +1,25 @@
 #!/bin/bash
 #SBATCH --nodes=1
+#SBATCH -p ndl
 #SBATCH --time 00:25:00
 #SBATCH --exclusive
-#SBATCH --export="NONE"
-#SBATCH -p normal256
 
 set -x
 set -e
 
-cd /scratch/work/marguina/acraneb2/single-directive-redim-sp/src
+cd /scratch/work/marguina/acraneb2/single-directive-redim/src
 
-ulimit -s unlimited
-export OMP_STACKSIZE=8Gb
+export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
-for arch in cpu
+for arch in gpu
 do
 
-  cp ../src/linux_bind.txt .
-  export OMP_NUM_THREADS=64
+# ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+
+  nvidia-smi
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1281 --ncount 10 --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1280 --ncount 10 --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  960 --ncount 10 --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  640 --ncount 10 --save --check  
@@ -27,6 +27,6 @@ do
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  320 --ncount 10 --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  160 --ncount 10 --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk   80 --ncount 10 --save --check  
-
+  
 done
 

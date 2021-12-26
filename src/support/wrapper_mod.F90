@@ -100,6 +100,79 @@ real(kind=8) :: ts,te
 REAL(KIND=8) :: TSC, TEC, TSD, TED, ZTC, ZTD
 
 INTEGER :: JCOUNT, JBLK, JLON
+INTEGER :: ITID, JBLK1, JBLK2
+INTEGER :: NTID
+INTEGER :: IRANK, ISIZE
+
+IRANK = 0
+ISIZE = 1
+
+CALL LINUX_BIND (IRANK, ISIZE)
+CALL LINUX_BIND_DUMP (IRANK, ISIZE)
+
+IF (.FALSE.) THEN
+#ifdef USE_OPENMP
+!$OMP PARALLEL PRIVATE (ITID, JBLK1, JBLK2)
+
+NTID = OMP_GET_MAX_THREADS ()
+ITID = OMP_GET_THREAD_NUM ()
+JBLK1 = 1 +  (KGPBLK * (ITID+0)) / NTID
+JBLK2 =      (KGPBLK * (ITID+1)) / NTID
+
+! Binding with first touch
+
+DO JBLK=JBLK1,JBLK2
+  PAPRS      (:,:,JBLK)          = 0.0_JPRB
+  PAPRSF     (:,:,JBLK)          = 0.0_JPRB
+  PCP        (:,:,JBLK)          = 0.0_JPRB
+  PR         (:,:,JBLK)          = 0.0_JPRB
+  PDELP      (:,:,JBLK)          = 0.0_JPRB
+  PNEB       (:,:,JBLK)          = 0.0_JPRB
+  PQ         (:,:,JBLK)          = 0.0_JPRB
+  PQCO2      (:,:,JBLK)          = 0.0_JPRB
+  PQICE      (:,:,JBLK)          = 0.0_JPRB
+  PQLI       (:,:,JBLK)          = 0.0_JPRB
+  PQO3       (:,:,JBLK)          = 0.0_JPRB
+  PT         (:,:,JBLK)          = 0.0_JPRB
+  PALB       (:,JBLK)            = 0.0_JPRB
+  PALBDIR    (:,JBLK)            = 0.0_JPRB
+  PEMIS      (:,JBLK)            = 0.0_JPRB
+  PGELAM     (:,JBLK)            = 0.0_JPRB
+  PGEMU      (:,JBLK)            = 0.0_JPRB
+  PMU0       (:,JBLK)            = 0.0_JPRB
+  PMU0LU     (:,JBLK)            = 0.0_JPRB
+  PTS        (:,JBLK)            = 0.0_JPRB
+  PDECRD     (:,JBLK)            = 0.0_JPRB
+  PCLCT      (:,JBLK)            = 0.0_JPRB
+  PGDEOSI    (:,:,:,JBLK)        = 0.0_JPRB
+  PGUEOSI    (:,:,:,JBLK)        = 0.0_JPRB
+  PGMU0      (:,:,JBLK)          = 0.0_JPRB
+  PGMU0_MIN  (:,JBLK)            = 0.0_JPRB
+  PGMU0_MAX  (:,JBLK)            = 0.0_JPRB
+  PGDEOTI    (:,:,JBLK)          = 0.0_JPRB
+  PGDEOTI2   (:,:,JBLK)          = 0.0_JPRB
+  PGUEOTI    (:,:,JBLK)          = 0.0_JPRB
+  PGUEOTI2   (:,:,JBLK)          = 0.0_JPRB
+  PGEOLT     (:,:,JBLK)          = 0.0_JPRB
+  PGEOXT     (:,:,JBLK)          = 0.0_JPRB
+  PGRPROX    (:,:,JBLK)          = 0.0_JPRB
+  PGMIXP     (:,:,JBLK)          = 0.0_JPRB
+  PGFLUXC    (:,:,JBLK)          = 0.0_JPRB
+  PGRSURF    (:,JBLK)            = 0.0_JPRB
+  PSDUR      (:,JBLK)            = 0.0_JPRB
+  PFRSO      (:,:,JBLK)          = 0.0_JPRB
+  PFRTH      (:,:,JBLK)          = 0.0_JPRB
+  PFRSODS    (:,JBLK)            = 0.0_JPRB
+  PFRSOPS    (:,JBLK)            = 0.0_JPRB
+  PFRSOLU    (:,JBLK)            = 0.0_JPRB
+  PFRTHDS    (:,JBLK)            = 0.0_JPRB
+  PDAER      (:,:,:,JBLK)        = 0.0_JPRB
+ENDDO
+
+!$OMP END PARALLEL 
+#endif
+
+ENDIF
 
 
 CALL PREPARE_ACRANEB2(YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,KSTEP, &
@@ -137,16 +210,43 @@ DO JCOUNT=1,KCOUNT
 
     TSC = OMP_GET_WTIME ()
 
-!$acc parallel loop gang vector private (YLSTACK) collapse (2)
-DO JBLK=1,KGPBLK
+#ifdef USE_OPENMP
+!$OMP PARALLEL PRIVATE (KIDIA, KFDIA, ITID, JBLK1, JBLK2)
+#endif
 
+#ifdef _OPENACC
+JBLK1 = 1
+JBLK2 = KGPBLK
+#endif
+
+#ifdef USE_OPENMP
+NTID = OMP_GET_MAX_THREADS ()
+ITID = OMP_GET_THREAD_NUM ()
+JBLK1 = 1 +  (KGPBLK * (ITID+0)) / NTID
+JBLK2 =      (KGPBLK * (ITID+1)) / NTID
+#endif
+
+!$acc parallel loop gang vector private (YLSTACK,KIDIA,KFDIA) collapse (2)
+DO JBLK=JBLK1,JBLK2
+
+#ifdef _OPENACC
   DO JLON = 1, KLON
+  KIDIA = JLON
+  KFDIA = JLON
+#endif
 
+#ifdef USE_OPENMP
+  KIDIA = 1
+  KFDIA = KLON
+#endif
+
+#ifdef USE_STACK
   YLSTACK%L = LOC (PSTACK (1, JBLK))
   YLSTACK%U = YLSTACK%L + ISTSZ * 8 
+#endif
 
   CALL ACRANEB2( &
-   & YDERDI,YDRIP,YDML_PHY_MF,JLON,JLON,KLON,KTDIA,KLEV,KJN,KSTEP, &
+   & YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,KSTEP, &
   ! - INPUT 2D
    & PAPRS(:,:,JBLK),PAPRSF(:,:,JBLK),PCP(:,:,JBLK),PR(:,:,JBLK),PDELP(:,:,JBLK),PNEB(:,:,JBLK), &
    & PQ(:,:,JBLK),PQCO2(:,:,JBLK),PQICE(:,:,JBLK),PQLI(:,:,JBLK),PQO3(:,:,JBLK),PT(:,:,JBLK), &
@@ -162,12 +262,22 @@ DO JBLK=1,KGPBLK
   ! - OUTPUT 1D
    & PFRSODS(:,JBLK),PFRSOPS(:,JBLK),PFRSOLU(:,JBLK),PFRTHDS(:,JBLK), &
   ! - INPUT 2D x 6
-   & PDAER(:,:,:,JBLK), YLSTACK)
+   & PDAER(:,:,:,JBLK) &
+#ifdef USE_STACK
+   & , YLSTACK &
+#endif
+   & )
 
+#ifdef _OPENACC
   ENDDO
+#endif
 
 ENDDO
 !$acc end parallel loop
+
+#ifdef USE_OPENMP
+!$OMP END PARALLEL 
+#endif
 
     TEC = OMP_GET_WTIME ()
 

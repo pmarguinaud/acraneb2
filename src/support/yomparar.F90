@@ -46,7 +46,7 @@ INTEGER(KIND=JPIM) :: MFRTHDS     !pointer on IR downward surface flux
 INTEGER(KIND=JPIM) :: MLSM        !pointer on land-sea mask
 INTEGER(KIND=JPIM) :: MCD         !pointer on drag coefficient
 
-REAL(KIND=JPRB), DIMENSION(:), ALLOCATABLE  :: XSW_BANDS  !SW spectral bands
+REAL(KIND=JPRB), ALLOCATABLE  :: XSW_BANDS (:)  !SW spectral bands
 ! for ext. surface scheme
 LOGICAL :: LOSUBG_COND ! switch to activate subgrid condensation
 LOGICAL :: LOSEDIC     ! activate cloud sedimentation
