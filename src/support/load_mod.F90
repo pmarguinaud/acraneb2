@@ -2,7 +2,7 @@ MODULE LOAD_MOD
 
 ! daand: based on Philippe Marguinaud's load_mod.F90 (from shallow_mf), but removed the open_load subroutine; it will be replaced by a does-all load_acraneb2 subroutine
 
-USE PARKIND1, ONLY : JPIM, JPRB
+USE PARKIND1, ONLY : JPIM, JPRB, JPRD
 
 IMPLICIT NONE
 
@@ -55,10 +55,12 @@ END SUBROUTINE DIFFX0
 SUBROUTINE LOADX0 (ILUN, X0)
 INTEGER          :: ILUN
 REAL (KIND=JPRB) :: X0
+REAL (KIND=JPRD) :: X0D
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
-  READ (ILUN) X0
+  READ (ILUN) X0D
+  X0 = X0D
 ENDIF
 END SUBROUTINE LOADX0
 
@@ -76,14 +78,17 @@ END SUBROUTINE DIFFX1
 SUBROUTINE LOADX1 (ILUN, X1)
 INTEGER                   :: ILUN
 REAL (KIND=JPRB), POINTER :: X1 (:)
+REAL (KIND=JPRD), ALLOCATABLE :: X1D (:)
 INTEGER :: IL (1), IB (1)
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
   READ (ILUN) IL
   READ (ILUN) IB
-  ALLOCATE (X1 (IL (1): IB (1)))
-  READ (ILUN) X1
+  ALLOCATE (X1  (IL (1): IB (1)), &
+          & X1D (IL (1): IB (1)))
+  READ (ILUN) X1D
+  X1 = X1D
 ENDIF
 END SUBROUTINE LOADX1
 
@@ -157,56 +162,68 @@ END SUBROUTINE DIFFX5
 SUBROUTINE LOADX2 (ILUN, X2)
 INTEGER                   :: ILUN
 REAL (KIND=JPRB), POINTER :: X2 (:,:)
+REAL (KIND=JPRD), ALLOCATABLE :: X2D (:,:)
 INTEGER :: IL (2), IB (2)
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
   READ (ILUN) IL
   READ (ILUN) IB
-  ALLOCATE (X2 (IL (1): IB (1), IL (2): IB (2)))
-  READ (ILUN) X2
+  ALLOCATE (X2  (IL (1): IB (1), IL (2): IB (2)), &
+          & X2D (IL (1): IB (1), IL (2): IB (2)))
+  READ (ILUN) X2D
+  X2 = X2D
 ENDIF
 END SUBROUTINE LOADX2
 
 SUBROUTINE LOADX3 (ILUN, X3)
 INTEGER                   :: ILUN
 REAL (KIND=JPRB), POINTER :: X3 (:,:,:)
+REAL (KIND=JPRD), ALLOCATABLE :: X3D (:,:,:)
 INTEGER :: IL (3), IB (3)
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
   READ (ILUN) IL
   READ (ILUN) IB
-  ALLOCATE (X3 (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3)))
-  READ (ILUN) X3
+  ALLOCATE (X3  (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3)), &
+            X3D (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3)))
+  READ (ILUN) X3D
+  X3 = X3D
 ENDIF
 END SUBROUTINE LOADX3
 
 SUBROUTINE LOADX4 (ILUN, X4)
 INTEGER                   :: ILUN
 REAL (KIND=JPRB), POINTER :: X4 (:,:,:,:)
+REAL (KIND=JPRD), ALLOCATABLE :: X4D (:,:,:,:)
 INTEGER :: IL (4), IB (4)
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
   READ (ILUN) IL
   READ (ILUN) IB
-  ALLOCATE (X4 (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4)))
-  READ (ILUN) X4
+  ALLOCATE (X4  (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4)), &
+            X4D (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4)))
+  READ (ILUN) X4D
+  X4 = X4D
 ENDIF
 END SUBROUTINE LOADX4
 
 SUBROUTINE LOADX5 (ILUN, X5)
 INTEGER                   :: ILUN
 REAL (KIND=JPRB), POINTER :: X5 (:,:,:,:,:)
+REAL (KIND=JPRD), ALLOCATABLE :: X5D (:,:,:,:,:)
 INTEGER :: IL (5), IB (5)
 LOGICAL :: LLOK
 READ (ILUN) LLOK
 IF ( LLOK ) THEN
   READ (ILUN) IL
   READ (ILUN) IB
-  ALLOCATE (X5 (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4), IL (5): IB (5)))
-  READ (ILUN) X5
+  ALLOCATE (X5  (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4), IL (5): IB (5)), &
+            X5D (IL (1): IB (1), IL (2): IB (2), IL (3): IB (3), IL (4): IB (4), IL (5): IB (5)))
+  READ (ILUN) X5D
+  X5 = X5D
 ENDIF
 END SUBROUTINE LOADX5
 

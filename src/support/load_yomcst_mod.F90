@@ -128,6 +128,8 @@ READ (KLUN) ZTEMP0
 RGAMD = ZTEMP0
 READ (KLUN) ZTEMP0
 RSNAN = ZTEMP0
+
+!$acc update device(rg,rsigma,rpi,rday,rd,rv)
 END SUBROUTINE
 
 
