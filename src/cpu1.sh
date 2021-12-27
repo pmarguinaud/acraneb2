@@ -13,6 +13,12 @@ cd /scratch/work/marguina/acraneb2/single-directive-redim-sp/src
 ulimit -s unlimited
 export OMP_STACKSIZE=8Gb
 
+
+for arch in cpu_s cpu_d
+do
+  ./scripts/compile.pl --arch $arch --update --compile
+done
+
 cd ../data
 
 for arch in cpu_s cpu_d
@@ -20,7 +26,7 @@ do
 
   cp ../src/linux_bind.txt .
   export OMP_NUM_THREADS=1
-  ../src/compile.$arch/main.x  --nproma  1 --ngpblk 1 --save --check  
+  ../src/compile.$arch/main.x  --nproma  1 --ngpblk 1 --save --check > ../src/$arch.eo 2>&1
 
 done
 

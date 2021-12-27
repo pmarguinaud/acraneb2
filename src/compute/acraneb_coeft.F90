@@ -57,7 +57,7 @@ SUBROUTINE ACRANEB_COEFT (KIDIA,KFDIA,KLON,KTDIA,KLEV0,KLEV,&
 ! End Modifications
 !-------------------------------------------------------------------------------
 
-USE PARKIND1  ,ONLY : JPIM     ,JPRB
+USE PARKIND1  ,ONLY : JPIM     ,JPRB     ,JPRD
 
 IMPLICIT NONE
 
@@ -95,7 +95,11 @@ INTEGER(KIND=JPIM) :: JLEV,JLON
 
 
 ! security constants
-ZARGLI=-250._JPRB
+IF (JPRB == JPRD) THEN
+  ZARGLI=-250._JPRB
+ELSE
+  ZARGLI=-80._JPRB
+ENDIF
 ZTRLI =EXP(ZARGLI)
 
 DO JLEV=KTDIA,KLEV
