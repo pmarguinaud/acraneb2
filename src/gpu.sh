@@ -21,9 +21,11 @@ do
   nvidia-smi
   if [ "$arch" = "gpu_s" ]
   then
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 3840 --ncount 10 # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk 2560 --ncount 10 # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1600 --ncount 10 # --save --check  
   fi
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1281 --ncount 10 # --save --check  
+# ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1281 --ncount 10 # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1280 --ncount 10 # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  960 --ncount 10 # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  640 --ncount 10 # --save --check  

@@ -20,6 +20,8 @@ do
 
   cp ../src/linux_bind.txt .
   export OMP_NUM_THREADS=64
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 3840 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 2560 --ncount 10  # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1280 --ncount 10  # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  960 --ncount 10  # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  640 --ncount 10  # --save --check  
