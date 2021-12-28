@@ -15,18 +15,18 @@ export OMP_STACKSIZE=8Gb
 
 cd ../data
 
-for arch in cpu
+for arch in cpu_s cpu_d
 do
 
   cp ../src/linux_bind.txt .
   export OMP_NUM_THREADS=64
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1280 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  960 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  640 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  480 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  320 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  160 --ncount 10 --save --check  
-  ../src/compile.$arch/main.x  --nproma  32 --ngpblk   80 --ncount 10 --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk 1280 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  960 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  640 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  480 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  320 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk  160 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk   80 --ncount 10  # --save --check  
 
 done
 

@@ -7,13 +7,13 @@
 set -x
 set -e
 
-cd /scratch/work/marguina/acraneb2/single-directive-redim/src
+cd /scratch/work/marguina/acraneb2/single-directive-redim-sp/src
 
 export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
-for arch in gpu
+for arch in gpu_d
 do
 
 # ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  

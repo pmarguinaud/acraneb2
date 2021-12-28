@@ -126,7 +126,7 @@ if ($opts{update})
         &copyIfNewer ("../support/$f", $f);
       }
     
-    if ($opts{arch} eq 'gpu')
+    if ($opts{arch} =~ m/^gpu/o)
       {
         for my $f (@compute)
           {
