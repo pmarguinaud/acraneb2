@@ -132,7 +132,7 @@ USE YOMCST   ,ONLY : RSIGMA   ,RG       ,RPI      ,RDAY
 USE YOMRIP   ,ONLY : TRIP
 USE YOERDI   ,ONLY : TERDI
 
-USE BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 !-------------------------------------------------------------------------------
 

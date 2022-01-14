@@ -97,7 +97,7 @@ USE YOMPHY   ,ONLY : TPHY
 
 USE YOMPHY3  ,ONLY : TPHY3
 
-USE BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 !-------------------------------------------------------------------------------
                    

@@ -23,27 +23,6 @@ namespace bitrep
  
 static const double const_2_over_pi = 6.3661977236758138e-1;
 
-static const double __sin_cos_coefficient[16] =
-{
-   1.590307857061102704e-10,  /* sin0 */
-  -2.505091138364548653e-08,  /* sin1 */
-   2.755731498463002875e-06,  /* sin2 */
-  -1.984126983447703004e-04,  /* sin3 */
-   8.333333333329348558e-03,  /* sin4 */
-  -1.666666666666666297e-01,  /* sin5 */
-   0.00000000000000000,       /* sin6 */
-   0.00000000000000000,       /* unused */
-
-  -1.136781730462628422e-11,  /* cos0 */
-   2.087588337859780049e-09,  /* cos1 */
-  -2.755731554299955694e-07,  /* cos2 */
-   2.480158729361868326e-05,  /* cos3 */
-  -1.388888888888066683e-03,  /* cos4 */
-   4.166666666666663660e-02,  /* cos5 */
-  -5.000000000000000000e-01,  /* cos6 */
-   1.000000000000000000e+00,  /* cos7 */
-};
-
 
 
 /*****************************************
@@ -72,6 +51,7 @@ double __internal_copysign_pos(double a, double b)
     return aa.d;
 }
 
+#pragma acc routine seq
 double __internal_old_exp_kernel(double x, int scale)
 { 
     double t, z;
@@ -121,9 +101,31 @@ double __internal_old_exp_kernel(double x, int scale)
  * \param x The number whose sin or cos must be computed
  * \param q Represents the quadrant as integer
  */
+#pragma acc routine seq
 static double __internal_sin_cos_kerneld(double x, int q)
 
 {
+    const double __sin_cos_coefficient[16] =
+    {
+       1.590307857061102704e-10,  /* sin0 */
+      -2.505091138364548653e-08,  /* sin1 */
+       2.755731498463002875e-06,  /* sin2 */
+      -1.984126983447703004e-04,  /* sin3 */
+       8.333333333329348558e-03,  /* sin4 */
+      -1.666666666666666297e-01,  /* sin5 */
+       0.00000000000000000,       /* sin6 */
+       0.00000000000000000,       /* unused */
+    
+      -1.136781730462628422e-11,  /* cos0 */
+       2.087588337859780049e-09,  /* cos1 */
+      -2.755731554299955694e-07,  /* cos2 */
+       2.480158729361868326e-05,  /* cos3 */
+      -1.388888888888066683e-03,  /* cos4 */
+       4.166666666666663660e-02,  /* cos5 */
+      -5.000000000000000000e-01,  /* cos6 */
+       1.000000000000000000e+00,  /* cos7 */
+    };
+
     const double *coeff = __sin_cos_coefficient + 8*(q&1);
     double x2 = x*x;
 
@@ -145,6 +147,7 @@ static double __internal_sin_cos_kerneld(double x, int q)
 }
 
 
+#pragma acc routine seq
 double __internal_tan_kernel(double x, int i)
 {
     double x2, z, q;
@@ -180,6 +183,7 @@ double __internal_tan_kernel(double x, int i)
 }
 
 
+#pragma acc routine seq
 static double __internal_trig_reduction_kerneld(double x, int *q_)
 {
     double j, t;
@@ -198,6 +202,7 @@ static double __internal_trig_reduction_kerneld(double x, int *q_)
     return t;
 }
 
+#pragma acc routine seq
 double sin(double x)
 {
     double z;
@@ -211,6 +216,7 @@ double sin(double x)
     return z;
 }
 
+#pragma acc routine seq
 double cos(double x)
 {
     double z;
@@ -225,6 +231,7 @@ double cos(double x)
     return z;
 }
 
+#pragma acc routine seq
 double tan(double x)
 {
     double z, inf = std::numeric_limits<double>::infinity();
@@ -243,6 +250,7 @@ double tan(double x)
  * INVERSE TRIGONOMETRIC FUNCTIONS *
  ***********************************/
 
+#pragma acc routine seq
 double __internal_asin_kernel(double x)
 {
   double r;
@@ -293,6 +301,7 @@ double __internal_atan_kernel(double x)
 }
 
 
+#pragma acc routine seq
 double asin(double x)
 {
   double fx, t0, t1;
@@ -330,6 +339,7 @@ double asin(double x)
   return t1;
 }
 
+#pragma acc routine seq
 double acos(double x)
 {
     double t0, t1;
@@ -418,6 +428,7 @@ double atan(double x)
  * HYPERBOLIC FUNCTIONS *
  ************************/
 
+#pragma acc routine seq
 double __internal_expm1_kernel (double x)
 {
   double t;
@@ -437,6 +448,7 @@ double __internal_expm1_kernel (double x)
   return t;
 }
 
+#pragma acc routine seq
 double __internal_exp2i_kernel(int32_t b)
 {
     union {
@@ -450,6 +462,7 @@ double __internal_exp2i_kernel(int32_t b)
     return xx.d;
 }
 
+#pragma acc routine seq
 double __internal_expm1_scaled(double x, int scale)
 { 
   double t, z, u;
@@ -487,6 +500,7 @@ double __internal_expm1_scaled(double x, int scale)
   return t;
 }   
 
+#pragma acc routine seq
 double sinh(double x)
 {
     double z;
@@ -525,6 +539,7 @@ double sinh(double x)
     return z;
 }
 
+#pragma acc routine seq
 double cosh(double x)
 {
     double t, z;
@@ -550,6 +565,7 @@ double cosh(double x)
     return z;
 }
 
+#pragma acc routine seq
 double tanh(double x)
 {
   double t;
@@ -587,6 +603,7 @@ double tanh(double x)
  * INVERSE HIPERBOLIC FUNCTIONS *
  ********************************/
 
+#pragma acc routine seq
 double __internal_atanh_kernel (double a_1, double a_2)
 {
     double a, a2, t;
@@ -607,6 +624,7 @@ double __internal_atanh_kernel (double a_1, double a_2)
     return t;
 }
 
+#pragma acc routine seq
 double asinh(double x)
 {
   double fx, t;
@@ -627,6 +645,7 @@ double asinh(double x)
   return __internal_copysign_pos(t, x);  
 }
 
+#pragma acc routine seq
 double acosh(double x)
 {
   double t;
@@ -641,6 +660,7 @@ double acosh(double x)
   return t;
 }
 
+#pragma acc routine seq
 double atanh(double x)
 {
   double fx, t;
@@ -747,6 +767,7 @@ double log(double x)
 }
 
 
+#pragma acc routine seq
 double log1p(double x)
 {
     double t;
@@ -770,6 +791,7 @@ double log1p(double x)
 }
 
 
+#pragma acc routine seq
 double __internal_exp_poly(double x)
 {
   double t;
@@ -789,6 +811,7 @@ double __internal_exp_poly(double x)
   return t;
 }
 
+#pragma acc routine seq
 double __internal_exp_scale(double x, int i)
 {
     unsigned int j, k;
@@ -869,21 +892,33 @@ double exp(double x)
 // Implement C interface
 extern "C"
 {
+#pragma acc routine seq
 double br_sin  (double x) { return bitrep::sin  (x); }
+#pragma acc routine seq
 double br_cos  (double x) { return bitrep::cos  (x); }
+#pragma acc routine seq
 double br_tan  (double x) { return bitrep::tan  (x); }
+#pragma acc routine seq
 double br_asin (double x) { return bitrep::asin (x); }
+#pragma acc routine seq
 double br_acos (double x) { return bitrep::acos (x); }
 #pragma acc routine seq
 double br_atan (double x) { return bitrep::atan (x); }
+#pragma acc routine seq
 double br_sinh (double x) { return bitrep::sinh (x); }
+#pragma acc routine seq
 double br_cosh (double x) { return bitrep::cosh (x); }
+#pragma acc routine seq
 double br_tanh (double x) { return bitrep::tanh (x); }
+#pragma acc routine seq
 double br_asinh(double x) { return bitrep::asinh(x); }
+#pragma acc routine seq
 double br_acosh(double x) { return bitrep::acosh(x); }
+#pragma acc routine seq
 double br_atanh(double x) { return bitrep::atanh(x); }
 #pragma acc routine seq
 double br_log  (double x) { return bitrep::log  (x); }
+#pragma acc routine seq
 double br_log1p(double x) { return bitrep::log1p(x); }
 #pragma acc routine seq
 double br_exp  (double x) { return bitrep::exp  (x); }

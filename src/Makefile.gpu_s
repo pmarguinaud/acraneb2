@@ -1,3 +1,4 @@
 FC=nvfortran -mp -byteswapio -Mlarge_arrays -fast -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Mcuda -DUSE_STACK -DPARKIND1_SINGLE
-CC=nvc++ -std=c++11 -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Mcuda
+CXX=nvc++ -std=c++11 -acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -Mcuda
+CC=pgcc -mp
 
