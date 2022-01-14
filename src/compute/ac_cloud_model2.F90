@@ -97,6 +97,8 @@ USE YOMPHY   ,ONLY : TPHY
 
 USE YOMPHY3  ,ONLY : TPHY3
 
+USE BR_INTRINSICS
+
 !-------------------------------------------------------------------------------
                    
 IMPLICIT NONE

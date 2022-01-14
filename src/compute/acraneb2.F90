@@ -132,6 +132,8 @@ USE YOMCST   ,ONLY : RSIGMA   ,RG       ,RPI      ,RDAY
 USE YOMRIP   ,ONLY : TRIP
 USE YOERDI   ,ONLY : TERDI
 
+USE BR_INTRINSICS
+
 !-------------------------------------------------------------------------------
 
 IMPLICIT NONE
