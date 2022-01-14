@@ -3,7 +3,9 @@
 #SBATCH --time 00:25:00
 #SBATCH --exclusive
 #SBATCH --export="NONE"
-#SBATCH -p normal256
+#SBATCH -p ndl
+
+module load nvhpc
 
 set -x
 set -e
@@ -14,14 +16,14 @@ ulimit -s unlimited
 export OMP_STACKSIZE=8Gb
 
 
-for arch in cpu_s cpu_d
+for arch in gpu_s gpu_d
 do
   ./scripts/compile.pl --arch $arch --update --compile
 done
 
 cd ../data
 
-for arch in cpu_s cpu_d
+for arch in gpu_d gpu_s
 do
 
   cp ../src/linux_bind.txt .

@@ -9,7 +9,7 @@ use Fxtran;
 
 use strict;
 
-my @sys = qw (OMP_LIB CUDAFOR);
+my @sys = qw (OMP_LIB CUDAFOR ISO_C_BINDING);
 
 sub slurp
 {
@@ -29,7 +29,7 @@ sub deps
     {
       my $code = &slurp ($f);
       my @inc = ($code =~ m/\n\s*#include\s+"(.*?)"/goms);
-      my @use = map { uc ($_) } ($code =~ m/\n\s*use\s+(\w+)/gomis);
+      my @use = map { uc ($_) } ($code =~ m/\n\s*use(?:\s*,\s*intrinsic)?\s+(\w+)/gomis);
       @use = grep { ! $sys{$_} } @use;
       my @mod = map { lc ($_) . '.o' } @use;
       $deps{$f} = [@mod, @inc];
@@ -54,6 +54,34 @@ include Makefile.inc
 EOF
 
 my (@obj, @prg);
+
+
+for my $cpp (<*.cpp>)
+  {
+    (my $obj = $cpp) =~ s/\.cpp$/.o/o;
+    $fh->print (<< "EOF");
+$obj: $cpp 
+	\$(CXX) -c $cpp
+
+EOF
+
+    push @obj, $obj,
+
+  }
+
+for my $C (<*.c>)
+  {
+    (my $obj = $C) =~ s/\.c$/.o/o;
+    $fh->print (<< "EOF");
+$obj: $C 
+	\$(CC) -c $C
+
+EOF
+
+    push @obj, $obj,
+
+  }
+
 
 
 for my $F90 (<*.F90>)

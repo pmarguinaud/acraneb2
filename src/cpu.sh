@@ -30,5 +30,35 @@ do
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk  160 --ncount 10  # --save --check  
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk   80 --ncount 10  # --save --check  
 
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk 3840 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk 2560 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk 1280 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk  960 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk  640 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk  480 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk  320 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk  160 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  16 --ngpblk   80 --ncount 10  # --save --check  
+
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk 3840 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk 2560 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk 1280 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk  960 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk  640 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk  480 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk  320 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk  160 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma  64 --ngpblk   80 --ncount 10  # --save --check  
+
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk 3840 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk 2560 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk 1280 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk  960 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk  640 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk  480 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk  320 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk  160 --ncount 10  # --save --check  
+  ../src/compile.$arch/main.x  --nproma 128 --ngpblk   80 --ncount 10  # --save --check  
+
 done
 
