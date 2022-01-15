@@ -148,7 +148,7 @@ if ($opts{update})
 
 if ($opts{compile})
   {
-    system ('make -j4 main.x') and die;
+    system ('make -j4 main.x br_main.x') and die;
   }
 
 
