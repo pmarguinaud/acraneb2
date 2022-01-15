@@ -277,7 +277,7 @@ ELSE
         ! effective dimension D_e of ice particles [micron]
         IF ( LLQI(JLON,JLEV) ) THEN
           ZDE=FCM_IWC2DE(JB,0)+FCM_IWC2DE(JB,1)*&
-           & (ZIWC(JLON,JLEV)+FCM_IWC2DE(JB,2))**FCM_IWC2DE(JB,3)
+           & EXP(FCM_IWC2DE(JB,3)*LOG(ZIWC(JLON,JLEV)+FCM_IWC2DE(JB,2)))
           ZDE=MAX(FCM_IWC2DE(JB,-2),MIN(FCM_IWC2DE(JB,-1),ZDE))
           ZDE1(JLON,JLEV,JB)=LOG(MAX(ZDE,ZTRLI))
         ELSE
@@ -287,7 +287,7 @@ ELSE
         ! effective radius R_e of water droplets [micron]
         IF ( LLQL(JLON,JLEV) ) THEN
           ZRE=FCM_LWC2RE(JB,0)+FCM_LWC2RE(JB,1)*&
-           & (ZLWC(JLON,JLEV)+FCM_LWC2RE(JB,2))**FCM_LWC2RE(JB,3)
+           & EXP(FCM_LWC2RE(JB,3)*LOG(ZLWC(JLON,JLEV)+FCM_LWC2RE(JB,2)))
           ZRE=MAX(FCM_LWC2RE(JB,-2),MIN(FCM_LWC2RE(JB,-1),ZRE))
           ZRE1(JLON,JLEV,JB)=LOG(MAX(ZRE,ZTRLI))
         ELSE

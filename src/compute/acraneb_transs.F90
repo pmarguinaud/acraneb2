@@ -550,7 +550,7 @@ IF ( FGTS_C(1) /= 0._JPRB ) THEN
 		!IF ( LDMASKS(JLON) ) THEN
       PUC(JLON)=PUC(JLON)+ZS_FC(JLON,KL)*PDU(JLON,4)*ZMD_S_(JLON)
       ZDELTA_(JLON,1)=ZDELTA_(JLON,1)+PUC(JLON)/&
-       & (1._JPRB+FGTS_C(3)*PUC(JLON))+FGTS_C(4)*PUC(JLON)**FGTS_C(5)
+       & (1._JPRB+FGTS_C(3)*PUC(JLON))+FGTS_C(4)*EXP(FGTS_C(5)*LOG(PUC(JLON)))
     !ENDIF
   ENDDO
 ENDIF
@@ -561,8 +561,8 @@ DO JG=1,3
 		!IF ( LDMASKS(JLON) ) THEN
 
       ! rescaling in order to account for broadband saturation
-      ZDELTA_(JLON,JG)=(FGTS_DELTA0(JG)/FGTS_ALPHA(JG))*((1._JPRB+&
-       & ZDELTA_(JLON,JG)/FGTS_DELTA0(JG))**FGTS_ALPHA(JG)-1._JPRB)
+      ZDELTA_(JLON,JG)=(FGTS_DELTA0(JG)/FGTS_ALPHA(JG))*&
+       &(EXP(FGTS_ALPHA(JG)*LOG(1._JPRB+ZDELTA_(JLON,JG)/FGTS_DELTA0(JG)))-1._JPRB)
 
       ! update u, p_avg.u and T_avg.u, compute p_avg and T_avg
       P_U (JLON,JG)=P_U (JLON,JG)+           PDU(JLON,JG)*ZMD_S_(JLON)
@@ -624,7 +624,7 @@ IF ( ANY(FGTS_OA /= 0._JPRB) ) THEN
 		DO JLON=KIDIA,KFDIA
 			!IF ( LDMASKS(JLON) ) THEN
         ZTAU_(JLON,JO)=1._JPRB-ZAR_(JLON,JO)-ZCOEF_(JLON,JO)*FGTS_OA(JO)*&
-         & (1._JPRB-ZAR_(JLON,JO))**FGTS_OB(JO)*ZAR_(JLON,JO)**FGTS_OC(JO)*&
+         & EXP(FGTS_OB(JO)*LOG(1._JPRB-ZAR_(JLON,JO)))*EXP(FGTS_OC(JO)*LOG(ZAR_(JLON,JO)))*&
          & (1._JPRB-FGTS_OD(JO)*ZAR_(JLON,JO))
       !ENDIF
     ENDDO
