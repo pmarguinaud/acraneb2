@@ -15,7 +15,7 @@ cd /scratch/work/marguina/acraneb2/single-directive-redim-sp-bitrep/src
 ulimit -s unlimited
 export OMP_STACKSIZE=8Gb
 
-for arch in gpu_d0 cpu_d0
+for arch in gpu_d0 cpu_d0 gpu_s0 cpu_s0
 do
   \rm -rf $arch
   mkdir -p $arch

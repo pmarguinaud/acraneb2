@@ -18,7 +18,7 @@ export OMP_STACKSIZE=8Gb
 
 cd ../data
 
-for arch in gpu_d0 cpu_d0
+for arch in gpu_d0 cpu_d0 gpu_s0 cpu_s0
 do
 
   cp ../src/linux_bind.txt .

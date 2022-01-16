@@ -1,0 +1,4 @@
+FC=nvfortran -mp -byteswapio -Mlarge_arrays -Mnofma -Minfo=accel,all,intensity,ccff -O0 -DUSE_OPENMP -DUSE_BR_INTRINSICS -DPARKIND1_SINGLE
+CXX=nvc++ -std=c++11 -Mnofma -O0 
+CC=pgcc -mp
+
