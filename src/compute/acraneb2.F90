@@ -125,14 +125,16 @@ SUBROUTINE ACRANEB2( &
 ! End Modifications
 !-------------------------------------------------------------------------------
 
+#ifdef USE_BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
+#endif
+
 USE MODEL_PHYSICS_MF_MOD , ONLY : MODEL_PHYSICS_MF_TYPE
 USE PARKIND1 ,ONLY : JPIM     ,JPRB     ,JPRD
 USE YOMCST   ,ONLY : RSIGMA   ,RG       ,RPI      ,RDAY
 
 USE YOMRIP   ,ONLY : TRIP
 USE YOERDI   ,ONLY : TERDI
-
-USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 !-------------------------------------------------------------------------------
 
@@ -430,7 +432,7 @@ IF ( ICALS == 1 ) THEN
     PGMU0_MAX(JLON)=0._JPRB
     ZCOLON(JLON)=COS(PGELAM(JLON))
     ZSILON(JLON)=SIN(PGELAM(JLON))
-    ZCOLAT(JLON)=SQRT(1.0_JPRB-PGEMU(JLON)*PGEMU(JLON))
+    ZCOLAT(JLON)=SQRT(1.0_JPRB-PGEMU(JLON)**2)
   ENDDO
   ZCOVSR=RCOVSR
   ZSIVSR=RSIVSR

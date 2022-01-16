@@ -59,10 +59,12 @@ SUBROUTINE ACRANEB_SOLVT (YDPHY,KIDIA,KFDIA,KLON,KTDIA,KLEV,&
 ! End Modifications
 !-----------------------------------------------------------------------
 
+#ifdef USE_BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
+#endif
+
 USE PARKIND1  ,ONLY : JPIM,    JPRB
 USE YOMPHY    ,ONLY : TPHY
-
-USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 IMPLICIT NONE
 

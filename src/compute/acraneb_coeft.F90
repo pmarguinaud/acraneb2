@@ -57,9 +57,11 @@ SUBROUTINE ACRANEB_COEFT (KIDIA,KFDIA,KLON,KTDIA,KLEV0,KLEV,&
 ! End Modifications
 !-------------------------------------------------------------------------------
 
-USE PARKIND1  ,ONLY : JPIM     ,JPRB     ,JPRD
-
+#ifdef USE_BR_INTRINSICS
 USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
+#endif
+
+USE PARKIND1  ,ONLY : JPIM     ,JPRB     ,JPRD
 
 IMPLICIT NONE
 

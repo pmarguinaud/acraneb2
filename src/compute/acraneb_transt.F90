@@ -72,12 +72,14 @@ SUBROUTINE ACRANEB_TRANST(YDPHY,YDPHY3,KIDIA,KFDIA,KLON,KTDIA,KLEV,LDAUTO,&
 ! End Modifications
 !-------------------------------------------------------------------------------
 
+#ifdef USE_BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
+#endif
+
 USE PARKIND1 ,ONLY : JPIM     ,JPRB     ,JPRD
 USE YOMCST   ,ONLY : RPI      ,RD       ,RV
 USE YOMPHY   ,ONLY : TPHY
 USE YOMPHY3  ,ONLY : TPHY3
-
-USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 IMPLICIT NONE
 
@@ -949,7 +951,7 @@ ENDDO
 DO JLON=KIDIA,KFDIA
   PUC(JLON)=PUC(JLON)+ZC_FC(JLON,KL)*PDU(JLON,4)*ZMD
   ZDELTA_(JLON,1)=ZDELTA_(JLON,1)+PUC(JLON)/&
-   & (1._JPRB+FGTC_C(3)*PUC(JLON))+FGTC_C(4)*EXP(FGTC_C(5)*LOG(PUC(JLON)))
+   & (1._JPRB+FGTC_C(3)*PUC(JLON))+FGTC_C(4)*PUC(JLON)**FGTC_C(5)
 ENDDO
 
 ! compute broadband saturation
@@ -957,7 +959,8 @@ DO JG=1,3
   DO JLON=KIDIA,KFDIA
 
     ! rescaling in order to account for broadband saturation
-    ZDELTA_(JLON,JG)=(FGTC_DELTA0(JG)/FGTC_ALPHA(JG))*(EXP(FGTC_ALPHA(JG)*LOG(1._JPRB+ZDELTA_(JLON,JG)/FGTC_DELTA0(JG)))-1._JPRB)
+    ZDELTA_(JLON,JG)=(FGTC_DELTA0(JG)/FGTC_ALPHA(JG))*((1._JPRB+&
+     & ZDELTA_(JLON,JG)/FGTC_DELTA0(JG))**FGTC_ALPHA(JG)-1._JPRB)
 
     ! update u and T_avg.u, compute T_avg
     P_U (JLON,JG)=P_U(JLON,JG)+            PDU(JLON,JG)
@@ -1017,7 +1020,7 @@ DO JO_=1,3
   IF ( FGTC_OA(JO_) /= 0._JPRB ) THEN
     DO JLON=KIDIA,KFDIA
       ZTAU_(JLON,JO_)=ZTAU_(JLON,JO_)-ZCOEF_(JLON,JO_)*FGTC_OA(JO_)*&
-       & EXP(FGTC_OB(JO_)*LOG(1._JPRB-ZAR_(JLON,JO_)))*EXP(FGTC_OC(JO_)*LOG(ZAR_(JLON,JO_)))*&
+       & (1._JPRB-ZAR_(JLON,JO_))**FGTC_OB(JO_)*ZAR_(JLON,JO_)**FGTC_OC(JO_)*&
        & (1._JPRB-FGTC_OD(JO_)*ZAR_(JLON,JO_))
     ENDDO
   ENDIF
@@ -1105,7 +1108,7 @@ ENDDO
 DO JLON=KIDIA,KFDIA
   PUC(JLON)=PUC(JLON)+ZT_FC(JLON,KL)*PDU(JLON,4)*ZMD
   ZDELTA_(JLON,1)=ZDELTA_(JLON,1)+PUC(JLON)/&
-   & (1._JPRB+FGTT_C(3)*PUC(JLON))+FGTT_C(4)*EXP(FGTT_C(5)*LOG(PUC(JLON)))
+   & (1._JPRB+FGTT_C(3)*PUC(JLON))+FGTT_C(4)*PUC(JLON)**FGTT_C(5)
 ENDDO
 
 ! compute broadband saturation
@@ -1113,7 +1116,8 @@ DO JG=1,3
   DO JLON=KIDIA,KFDIA
 
     ! rescaling in order to account for broadband saturation
-    ZDELTA_(JLON,JG)=(FGTT_DELTA0(JG)/FGTT_ALPHA(JG))*(EXP(FGTT_ALPHA(JG)*LOG(1._JPRB+ZDELTA_(JLON,JG)/FGTT_DELTA0(JG)))-1._JPRB)
+    ZDELTA_(JLON,JG)=(FGTT_DELTA0(JG)/FGTT_ALPHA(JG))*((1._JPRB+&
+     & ZDELTA_(JLON,JG)/FGTT_DELTA0(JG))**FGTT_ALPHA(JG)-1._JPRB)
 
     ! update u and T_avg.u, compute T_avg
     P_U (JLON,JG)=P_U (JLON,JG)+           PDU(JLON,JG)
@@ -1172,7 +1176,7 @@ DO JO_=1,3
   IF ( FGTT_OA(JO_) /= 0._JPRB ) THEN
     DO JLON=KIDIA,KFDIA
       ZTAU_(JLON,JO_)=ZTAU_(JLON,JO_)-ZCOEF_(JLON,JO_)*FGTT_OA(JO_)*&
-       & EXP(FGTT_OB(JO_)*LOG(1._JPRB-ZAR_(JLON,JO_)))*EXP(FGTT_OC(JO_)*LOG(ZAR_(JLON,JO_)))*&
+       & (1._JPRB-ZAR_(JLON,JO_))**FGTT_OB(JO_)*ZAR_(JLON,JO_)**FGTT_OC(JO_)*&
        & (1._JPRB-FGTT_OD(JO_)*ZAR_(JLON,JO_))
     ENDDO
   ENDIF

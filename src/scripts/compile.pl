@@ -56,6 +56,7 @@ sub addSeqDirective
 sub preProcessIfNewerCPU
 {
   use Associate;
+  use Expr;
   use Fxtran;
 
   my ($f1, $f2) = @_;
@@ -68,6 +69,9 @@ sub preProcessIfNewerCPU
       &saveToFile ($d, "tmp/$f2");
 
       &Associate::resolveAssociates ($d);
+      &saveToFile ($d, "tmp/resolveAssociates/$f2");
+
+      &Expr::replacePowByMultiplyOrExp ($d);
       &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
@@ -86,6 +90,7 @@ sub preProcessIfNewerGPU
   use Vector;
   use Stack;
   use Loop;
+  use Expr;
   use ReDim;
 
   my ($f1, $f2) = @_;
@@ -119,6 +124,9 @@ sub preProcessIfNewerGPU
 
       &Stack::addStack ($d);
       &saveToFile ($d, "tmp/addStack/$f2");
+
+      &Expr::replacePowByMultiplyOrExp ($d);
+      &saveToFile ($d, "tmp/resolveAssociates/$f2");
 
       'FileHandle'->new (">$f2")->print ($d->textContent ());
 

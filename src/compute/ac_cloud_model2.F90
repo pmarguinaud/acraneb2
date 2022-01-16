@@ -89,6 +89,10 @@ SUBROUTINE AC_CLOUD_MODEL2(                          &
 ! End Modifications
 !-------------------------------------------------------------------------------
 
+#ifdef USE_BR_INTRINSICS
+USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
+#endif
+
 USE PARKIND1 ,ONLY: JPIM     ,JPRB
 
 USE YOMCST   ,ONLY: RG
@@ -96,8 +100,6 @@ USE YOMCST   ,ONLY: RG
 USE YOMPHY   ,ONLY : TPHY
 
 USE YOMPHY3  ,ONLY : TPHY3
-
-USE BR_INTRINSICS, ONLY : COS => BR_COS, SIN => BR_SIN, EXP => BR_EXP, LOG => BR_LOG
 
 !-------------------------------------------------------------------------------
                    
@@ -277,7 +279,7 @@ ELSE
         ! effective dimension D_e of ice particles [micron]
         IF ( LLQI(JLON,JLEV) ) THEN
           ZDE=FCM_IWC2DE(JB,0)+FCM_IWC2DE(JB,1)*&
-           & EXP(FCM_IWC2DE(JB,3)*LOG(ZIWC(JLON,JLEV)+FCM_IWC2DE(JB,2)))
+           & (ZIWC(JLON,JLEV)+FCM_IWC2DE(JB,2))**FCM_IWC2DE(JB,3)
           ZDE=MAX(FCM_IWC2DE(JB,-2),MIN(FCM_IWC2DE(JB,-1),ZDE))
           ZDE1(JLON,JLEV,JB)=LOG(MAX(ZDE,ZTRLI))
         ELSE
@@ -287,7 +289,7 @@ ELSE
         ! effective radius R_e of water droplets [micron]
         IF ( LLQL(JLON,JLEV) ) THEN
           ZRE=FCM_LWC2RE(JB,0)+FCM_LWC2RE(JB,1)*&
-           & EXP(FCM_LWC2RE(JB,3)*LOG(ZLWC(JLON,JLEV)+FCM_LWC2RE(JB,2)))
+           & (ZLWC(JLON,JLEV)+FCM_LWC2RE(JB,2))**FCM_LWC2RE(JB,3)
           ZRE=MAX(FCM_LWC2RE(JB,-2),MIN(FCM_LWC2RE(JB,-1),ZRE))
           ZRE1(JLON,JLEV,JB)=LOG(MAX(ZRE,ZTRLI))
         ELSE
