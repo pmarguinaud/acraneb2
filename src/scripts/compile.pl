@@ -53,7 +53,30 @@ sub addSeqDirective
   $pu->insertAfter (&t ("\n"), $pu->firstChild);
 }
 
-sub preProcessIfNewer
+sub preProcessIfNewerCPU
+{
+  use Associate;
+  use Fxtran;
+
+  my ($f1, $f2) = @_;
+
+  if (&newer ($f1, $f2))
+    {
+      print "Preprocess $f1\n";
+
+      my $d = &Fxtran::fxtran (location => $f1);
+      &saveToFile ($d, "tmp/$f2");
+
+      &Associate::resolveAssociates ($d);
+      &saveToFile ($d, "tmp/resolveAssociates/$f2");
+
+      'FileHandle'->new (">$f2")->print ($d->textContent ());
+
+      &Fxtran::intfb ($f2);
+    }
+}
+
+sub preProcessIfNewerGPU
 {
   use Inline;
   use Associate;
@@ -130,14 +153,14 @@ if ($opts{update})
       {
         for my $f (@compute)
           {
-            &preProcessIfNewer ("../compute/$f", $f);
+            &preProcessIfNewerGPU ("../compute/$f", $f);
           }
       }
    else
      {
         for my $f (@compute)
           {
-            &copyIfNewer ("../compute/$f", $f);
+            &preProcessIfNewerCPU ("../compute/$f", $f);
           }
      }
 
