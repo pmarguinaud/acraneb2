@@ -9,11 +9,23 @@ my $f = shift;
 my $text = do { my $fh = 'FileHandle'->new ("<$f"); local $/ = undef; <$fh> };
 
 
-my @bZTC = ($text =~ m/--ngpblk\s+(\d+).*?ZTC =\s+(\S+)\s+(\S+)/goms);
+my @bZTC = ($text =~ m/cpu_(s|d).*?--nproma\s+(\d+)\s+--ngpblk\s+(\d+).*?ZTC =\s+(\S+)\s+(\S+)/goms);
 
-while (my ($b, $ZTC1, $ZTC2) = splice (@bZTC, 0, 3))
+my %fh;
+
+while (my ($p, $n, $b, $ZTC1, $ZTC2) = splice (@bZTC, 0, 5))
   {
-    printf ("%10d %12.4e %12.4e\n", $b, $ZTC1, $ZTC2);
+    my $fh = $fh{"$p.$n"};
+    unless ($fh)
+      {
+        $fh{"$p.$n"} = $fh = 'FileHandle'->new (">ZTC.AMD.$p.$n.txt");
+      }
+    $fh->printf ("%s %10d %10d %10d %12.4e %12.4e\n", $p, $n * $b, $n, $b, $ZTC1, $ZTC2);
+  }
+
+for (values (%fh))
+  {
+    $_->close ();
   }
 
 __END__
