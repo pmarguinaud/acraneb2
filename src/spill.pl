@@ -4,7 +4,7 @@ use strict;
 use FileHandle;
 use Data::Dumper;
 
-my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<make.eo"); <$fh> };
+my $text = do { local $/ = undef; my $fh = 'FileHandle'->new ("<$ARGV[0]"); <$fh> };
 
 my %F902text = ($text =~ m/(\w+\.F90)(.*?)(?=nvfortran)/goms);
 
