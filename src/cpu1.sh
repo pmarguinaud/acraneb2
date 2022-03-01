@@ -8,7 +8,7 @@
 set -x
 set -e
 
-cd /scratch/work/marguina/acraneb2/single-directive-redim-sp/src
+cd /scratch/work/marguina/acraneb2/single-directive-redim-sp-interpolate-nocontains/src
 
 ulimit -s unlimited
 export OMP_STACKSIZE=8Gb
