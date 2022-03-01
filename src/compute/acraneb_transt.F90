@@ -117,7 +117,6 @@ REAL(KIND=JPRB) :: ZA,ZB,ZARGLI,ZEPSD,ZEPSP,ZEPSU,ZTRLI,ZTCORR,ZTT
 
 REAL(KIND=JPRB) :: ZEPSV,ZGAMV,ZIBV0,ZIZV0,ZVOISIM
 
-REAL(KIND=JPRB) :: ZT_RHOZ0V (3)
 
 REAL(KIND=JPRB) :: ZDELP(KLON)
 REAL(KIND=JPRB) :: ZEOTO(KLON)
@@ -200,11 +199,6 @@ ELSE
   ZEPSD =1.E-10_JPRB
 ENDIF
 ZEPSU =ZTRLI
-
-! Voigt coefficients
-ZT_RHOZ0V(1)=0.031_JPRB
-ZT_RHOZ0V(2)=0.013_JPRB
-ZT_RHOZ0V(3)=0.012_JPRB
 
 ZGAMV       =0.36_JPRB
 ZEPSV       =0.014_JPRB
@@ -894,6 +888,7 @@ REAL(KIND=JPRB) :: ZAR_   (KLON,3)
 REAL(KIND=JPRB) :: ZCOEF_ (KLON,3)
 REAL(KIND=JPRB) :: ZTAU_  (KLON,3)
 
+REAL(KIND=JPRB) :: ZT_RHOZ0V (3)
 REAL(KIND=JPRB) :: ZMD
 
 ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
@@ -912,6 +907,11 @@ ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
 ! ratio of diffusivity factors sqrt(e) and 2 (the latter is used in
 ! weak line limit)
 ZMD=0.5_JPRB*EXP(0.5_JPRB)
+
+! Voigt coefficients
+ZT_RHOZ0V(1)=0.031_JPRB
+ZT_RHOZ0V(2)=0.013_JPRB
+ZT_RHOZ0V(3)=0.012_JPRB
 
 ! compute optical depths including narrowband saturation
 DO JG=1,3
@@ -1075,6 +1075,7 @@ REAL(KIND=JPRB) :: ZAR_   (KLON,3)
 REAL(KIND=JPRB) :: ZCOEF_ (KLON,3)
 REAL(KIND=JPRB) :: ZTAU_  (KLON,3)
 
+REAL(KIND=JPRB) :: ZT_RHOZ0V (3)
 REAL(KIND=JPRB) :: ZMD
 
 ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
@@ -1093,6 +1094,11 @@ ASSOCIATE(FGTT_OC=>YDPHY3%FGTT_OC, FGTT_OB=>YDPHY3%FGTT_OB, &
 ! ratio of diffusivity factors sqrt(e) and 2 (the latter is used in
 ! weak line limit)
 ZMD=0.5_JPRB*EXP(0.5_JPRB)
+
+! Voigt coefficients
+ZT_RHOZ0V(1)=0.031_JPRB
+ZT_RHOZ0V(2)=0.013_JPRB
+ZT_RHOZ0V(3)=0.012_JPRB
 
 ! compute optical depths including narrowband saturation
 DO JG=1,3
