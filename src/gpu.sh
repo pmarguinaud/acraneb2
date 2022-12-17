@@ -13,10 +13,13 @@ export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
-for arch in gpu_s gpu_d 
+#for arch in gpu_s gpu_d 
+for arch in gpu_d 
 do
 
-# ../src/compile.$arch/main.x  --nproma 128 --ngpblk 160 --ncount 10 --save --check  
+  ../src/compile.$arch/main.x  --nproma  32 --ngpblk   1 --ncount  1 --save --check  
+
+  exit
 
   nvidia-smi
   if [ "$arch" = "gpu_s" ]
