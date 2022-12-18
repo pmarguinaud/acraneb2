@@ -113,6 +113,8 @@ REAL(KIND=JPRB),INTENT(OUT)   :: PRPROX(KLON,0:KLEV)
 REAL(KIND=JPRB),INTENT(OUT)   :: PRSURF(KLON)
 TYPE(STACK) :: YDSTACK, YLSTACK
 
+#ifdef UNDEF
+
 #include "abor1.intfb.h"
 
 ! -----
@@ -185,48 +187,14 @@ REAL(KIND=JPRB) :: ZA_    (3)
 REAL(KIND=JPRB) :: ZAR_   (3)
 REAL(KIND=JPRB) :: ZCOEF_ (3)
 REAL(KIND=JPRB) :: ZTAU_  (3)
-
+#endif
 
 
 ! local integer scalars
 INTEGER(KIND=JPIM) :: JG,JLEV,JLEV1,JLEV2,JLON,ILEV
 
-#ifdef UNDEF
-
-YLSTACK=YDSTACK
-
-alloc (ZQ)
-alloc (ZIRHOV)
-alloc (ZDEOTA0)
-alloc (ZDEOTA1)
-alloc (ZDEOTA2)
-alloc (ZUEOTA0)
-alloc (ZUEOTA1)
-alloc (ZUEOTA2)
-alloc (ZC_FW)
-alloc (ZC_FS)
-alloc (ZC_FC)
-alloc (ZT_FW)
-alloc (ZT_FS)
-alloc (ZT_FC)
-alloc (ZDEL1D)
-alloc (ZTAU0)
-alloc (ZTAU1)
-
-#endif
-
 JLON = KIDIA
 
-
-IF ( .NOT.LDAUTO ) THEN
-
-
-ELSE
-
-  ! -----
-  ! double vertical loop for the auto-evaluation of EBL flux with
-  ! gaseous absorption only
-  ! -----
 
 IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV1 = ", KTDIA-1, KLEV
   DO JLEV1=KTDIA-1,KLEV    ! initial half level
@@ -242,7 +210,6 @@ ENDIF
 
     ENDDO
   ENDDO
-ENDIF
 
 
 RETURN
