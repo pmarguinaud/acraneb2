@@ -193,101 +193,21 @@ ALLOCATE (PSTACK (ISTSZ, KGPBLK))
 
 ts=omp_get_wtime()
 
-ZTD = 0.
-ZTC = 0.
+!$acc parallel loop gang vector private (KIDIA,KFDIA) collapse (2)
+DO JBLK=1, 1
 
-DO JCOUNT=1,KCOUNT
-
-
-    TSD = OMP_GET_WTIME ()
-    TSC = OMP_GET_WTIME ()
-
-#ifdef USE_OPENMP
-!$OMP PARALLEL PRIVATE (KIDIA, KFDIA, ITID, JBLK1, JBLK2)
-#endif
-
-#ifdef _OPENACC
-JBLK1 = 1
-JBLK2 = KGPBLK
-#endif
-
-#ifdef USE_OPENMP
-NTID = OMP_GET_MAX_THREADS ()
-ITID = OMP_GET_THREAD_NUM ()
-JBLK1 = 1 +  (KGPBLK * (ITID+0)) / NTID
-JBLK2 =      (KGPBLK * (ITID+1)) / NTID
-#endif
-
-!$acc parallel loop gang vector private (YLSTACK,KIDIA,KFDIA) collapse (2)
-DO JBLK=JBLK1,JBLK2
-
-#ifdef _OPENACC
   DO JLON = 1, KLON
   KIDIA = JLON
   KFDIA = JLON
-#endif
-
-#ifdef USE_OPENMP
-  KIDIA = 1
-  KFDIA = KLON
-#endif
-
-#ifdef USE_STACK
-  YLSTACK%L = LOC (PSTACK (1, JBLK))
-  YLSTACK%U = YLSTACK%L + ISTSZ * 8 
-#endif
 
   CALL ACRANEB2( &
    & KIDIA,KFDIA,KLON,KTDIA,KLEV&
    & )
 
-#ifdef _OPENACC
   ENDDO
-#endif
 
 ENDDO
 !$acc end parallel loop
-
-
-
-#ifdef USE_OPENMP
-!$OMP END PARALLEL 
-#endif
-
-    TEC = OMP_GET_WTIME ()
-
-    TED = OMP_GET_WTIME ()
-
-    ZTC = ZTC + (TEC - TSC)
-    ZTD = ZTD + (TED - TSD)
-
-ENDDO
-
-RETURN
-
-te=omp_get_wtime()
-write (*,'(A,F8.2,A)') 'elapsed time : ',te-ts,' s'
-write (*,'(A,F8.4,A)') '          i.e. ',1000.*(te-ts)/(KLON*KGPBLK)/KCOUNT,' ms/gp'
-
-PRINT *, " ZTD = ", ZTD, ZTD / REAL (KLON*KGPBLK*KCOUNT, JPRB)
-PRINT *, " ZTC = ", ZTC, ZTC / REAL (KLON*KGPBLK*KCOUNT, JPRB)
-
-
-! check output
-IF ( LCHECK ) THEN
-	CALL CHECK_ACRANEB2(KLON,KLEV, KGPBLK, &
-	 & PFRSO,PFRTH, &
-	 & PFRSODS,PFRSOPS,PFRSOLU,PFRTHDS)
-ENDIF
-
-IF (LSAVE) THEN
-CALL WR ('PFRSO.dat',   PFRSO)
-CALL WR ('PFRTH.dat',   PFRTH)
-CALL WR ('PFRSODS.dat', PFRSODS)
-CALL WR ('PFRSOPS.dat', PFRSOPS)
-CALL WR ('PFRSOLU.dat', PFRSOLU)
-CALL WR ('PFRTHDS.dat', PFRTHDS)
-ENDIF
 
 END SUBROUTINE WRAPPER
 
