@@ -248,7 +248,12 @@ DO JBLK=JBLK1,JBLK2
 #endif
 
   CALL ACRANEB2( &
-   & YDERDI,YDRIP,YDML_PHY_MF,KIDIA,KFDIA,KLON,KTDIA,KLEV,KJN,KSTEP, &
+#ifdef UNDEF
+   & YDERDI,YDRIP,YDML_PHY_MF,&
+#endif
+   & KIDIA,KFDIA,KLON,KTDIA,KLEV&
+#ifdef UNDEF
+   & ,KJN,KSTEP, &
   ! - INPUT 2D
    & PAPRS(:,:,JBLK),PAPRSF(:,:,JBLK),PCP(:,:,JBLK),PR(:,:,JBLK),PDELP(:,:,JBLK),PNEB(:,:,JBLK), &
    & PQ(:,:,JBLK),PQCO2(:,:,JBLK),PQICE(:,:,JBLK),PQLI(:,:,JBLK),PQO3(:,:,JBLK),PT(:,:,JBLK), &
@@ -267,6 +272,7 @@ DO JBLK=JBLK1,JBLK2
    & PDAER(:,:,:,JBLK) &
 #ifdef USE_STACK
    & , YLSTACK &
+#endif
 #endif
    & )
 
