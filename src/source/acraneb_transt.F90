@@ -395,6 +395,8 @@ ENDDO
 	ZT_UC        =ZEPSU
 
 
+#ifdef UNDEF
+
 ! compute total and incremental optical depths
 ! daand: a bit worried about PT and ZDEOTA0/ZDEOTA1 being passed as scalars here ...
 
@@ -669,6 +671,9 @@ ENDDO
 
   PDEOTI(JLON,KTDIA-1)=ZDEOTA1(JLON,KTDIA-1)
 
+#endif
+
+#ifdef UNDEF
 
 ! -----
 ! descending vertical loop
@@ -965,6 +970,10 @@ DO JLEV=KTDIA,KLEV
 
 ENDDO
 
+#endif
+
+#ifdef UNDEF
+
 ! -----
 ! temperature correction for CTS
 ! -----
@@ -1018,7 +1027,7 @@ ENDDO
 	ZC_UC        =ZEPSU
 	ZT_UC        =ZEPSU
 
-
+#endif
 
 ! -----
 ! ascending vertical loop
