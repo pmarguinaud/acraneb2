@@ -1,7 +1,5 @@
 PROGRAM MAIN
 
-!include "acraneb2.intfb.h"
-
 INTEGER :: JBLK, JLON
 
 !$acc parallel loop gang vector private (JLON,JBLK) collapse (2)
