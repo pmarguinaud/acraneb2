@@ -2302,6 +2302,8 @@ ELSE
 IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV1 = ", KTDIA-1, KLEV
   DO JLEV1=KTDIA-1,KLEV    ! initial half level
 
+#ifdef UNDEF
+
 		! daand: added explicit loops here
 		DO JG=1,3
 			
@@ -2328,6 +2330,7 @@ IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV1 = ", KTDIA-1, KLEV
       ZTAU0(JLON,JLEV1,JLEV1)=1._JPRB
       ZTAU1(JLON,JLEV1,JLEV1)=1._JPRB
     
+#endif
 
 IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV2 = ", JLEV1+1,KLEV
     DO JLEV2=JLEV1+1,KLEV  ! final half level
