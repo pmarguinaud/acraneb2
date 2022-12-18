@@ -93,10 +93,7 @@ TYPE (STACK) :: YLSTACK
 real(kind=8) :: ts,te
 REAL(KIND=8) :: TSC, TEC, TSD, TED, ZTC, ZTD
 
-INTEGER :: JCOUNT, JBLK, JLON
-INTEGER :: ITID, JBLK1, JBLK2
-INTEGER :: NTID
-INTEGER :: IRANK, ISIZE
+INTEGER :: JBLK, JLON
 
 !$acc parallel loop gang vector private (JLON,JBLK) collapse (2)
 DO JBLK=1, 1
