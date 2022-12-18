@@ -851,6 +851,9 @@ IF ( ICALT > 0 ) THEN
 
 IF (JLON == 1) PRINT *, __FILE__, ':', __LINE__, ZEOXT(JLON,1)
 
+RETURN
+
+
   IF ( YDML_PHY_MF%YRPHY%NTHRAYFR /= 1 ) THEN
 
     ! full timestep within intermittency => store necessary arrays
