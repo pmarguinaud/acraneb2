@@ -216,6 +216,7 @@ alloc (ZTAU1)
 JLON = KIDIA
 
 
+#ifdef UNDEF
 
 ! -----
 ! security constants, derived parameters for Voigt effect and
@@ -394,6 +395,8 @@ ENDDO
 	ZC_UC        =ZEPSU
 	ZT_UC        =ZEPSU
 
+
+#endif
 
 #ifdef UNDEF
 
