@@ -193,17 +193,11 @@ ALLOCATE (PSTACK (ISTSZ, KGPBLK))
 
 ts=omp_get_wtime()
 
-!$acc parallel loop gang vector private (KIDIA,KFDIA) collapse (2)
+!$acc parallel loop gang vector private (JLON,JBLK) collapse (2)
 DO JBLK=1, 1
-
   DO JLON = 1, 32
-
-  CALL ACRANEB2( &
-   & JLON,JLON,32,1,87&
-   & )
-
+  CALL ACRANEB2(JLON,JLON,32,1,87)
   ENDDO
-
 ENDDO
 !$acc end parallel loop
 
