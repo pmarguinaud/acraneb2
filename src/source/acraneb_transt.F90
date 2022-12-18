@@ -2675,6 +2675,9 @@ IF (JLON == 1) PRINT *, __FILE__, ':', __LINE__, PEOLT(JLON,1)
 
 ENDIF
 
+
+RETURN
+
 ! -----
 ! compute maximum optical depths for EBL, resp. EBL-EAL flux and 
 ! correction factor for tau12 /= tau1.tau2
