@@ -1369,6 +1369,8 @@ DO JG=1,3
   
 ENDDO
 
+#ifdef UNDEF
+
 ! add H2O e-type continuum
 
   ZC_UC=ZC_UC+ZC_FC(JLON,(KTDIA-1))*ZDU(4)*ZMD
@@ -1458,7 +1460,7 @@ ENDDO
    & ZDELTA_(1),ZDELTA_(2),ZDELTA_(3))
 
 
-
+#endif
 
 #ifdef UNDEF
 !----- END INLINE DELTA_C
