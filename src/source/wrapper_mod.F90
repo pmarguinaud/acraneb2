@@ -196,12 +196,10 @@ ts=omp_get_wtime()
 !$acc parallel loop gang vector private (KIDIA,KFDIA) collapse (2)
 DO JBLK=1, 1
 
-  DO JLON = 1, KLON
-  KIDIA = JLON
-  KFDIA = JLON
+  DO JLON = 1, 32
 
   CALL ACRANEB2( &
-   & KIDIA,KFDIA,KLON,KTDIA,KLEV&
+   & JLON,JLON,32,1,87&
    & )
 
   ENDDO
