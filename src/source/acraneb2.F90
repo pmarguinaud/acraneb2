@@ -360,6 +360,8 @@ REAL(KIND=JPRB) :: ZARGLI,ZTRLI,ZEARRT,ZDEBL,ZW,&
   & ZEPS1,ZEPSAL,ZIEART,ZSOLLEV,ZEPSNEB,ZSECUR,ZSIGMA,ZUNSCALE,&
   & ZEFFE2,ZTARE2,ZDEL1,ZDEL2,ZFTPP,ZTARSP,ZUSA,ZZEO2TA,ZZEO2SA
 
+#ifdef UNDEF
+
 !-------------------------------------------------------------------------------
 
 #include "ac_cloud_model2.intfb.h"
@@ -500,6 +502,7 @@ alloc (ZEOTI)
 alloc (LLMASKS)
 
 
+#endif
 
 JLON = KIDIA
 
