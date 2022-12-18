@@ -2398,6 +2398,8 @@ ENDIF
          & (1._JPRB+YDPHY3%FGTC_C(3)*ZC_UC)+YDPHY3%FGTC_C(4)*ZC_UC**YDPHY3%FGTC_C(5)
       
       
+#ifdef UNDEF
+
       ! compute broadband saturation
       DO JG=1,3
         
@@ -2479,8 +2481,9 @@ ENDIF
         ZDEL0=MAX(ZDEL0,&
          & ZDELTA_(1),ZDELTA_(2),ZDELTA_(3))
       
+#endif
       
-            
+#ifdef UNDEF
 
 
       !----- END INLINE DELTA_C
@@ -2532,6 +2535,9 @@ ENDIF
         ZDELTA_(1)=ZDELTA_(1)+ZT_UC/&
          & (1._JPRB+YDPHY3%FGTT_C(3)*ZT_UC)+YDPHY3%FGTT_C(4)*ZT_UC**YDPHY3%FGTT_C(5)
       
+#endif
+
+#ifdef UNDEF
       
       ! compute broadband saturation
       DO JG=1,3
@@ -2565,6 +2571,8 @@ ENDIF
            & (1._JPRB+ZDELTA_(JG)))
         
       ENDDO
+
+#endif
 
 #ifdef UNDEF
 
@@ -2650,6 +2658,8 @@ ENDIF
     ENDDO
   ENDDO
 
+#ifdef UNDEF
+
 IF (JLON == 1) PRINT *, __FILE__, ':', __LINE__, PEOLT(JLON,1)
 
 
@@ -2672,6 +2682,8 @@ IF (JLON == 1) PRINT *, __FILE__, ':', __LINE__, PEOLT(JLON,1)
       
     ENDDO
   ENDDO
+
+#endif
 
 ENDIF
 
