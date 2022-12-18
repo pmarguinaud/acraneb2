@@ -13,6 +13,15 @@ export NV_ACC_CUDA_HEAPSIZE=64Mb
 
 cd ../data
 
+
+for v in $(cat ../src/list)
+do
+  ../src/compile.gpu_d.$v/main.x  --nproma  32 --ngpblk   1 --ncount  1 --save --check  
+done
+
+
+exit
+
 #for arch in gpu_s gpu_d 
 for arch in gpu_d 
 do
