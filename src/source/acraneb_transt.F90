@@ -1632,6 +1632,8 @@ ENDDO
 
 IF ( .NOT.LDAUTO ) THEN
 
+#ifdef UNDEF
+
   ! -----
   ! local transmissions and optical depths for single and double layers
   ! -----
@@ -2291,6 +2293,7 @@ IF (JLON == 1) PRINT *, __FILE__, ':', __LINE__, PEOLT(JLON,1)
     ZTAU0(JLON,KTDIA-1,KLEV)=EXP(MAX(-ZDEL0,ZARGLI))
     ZTAU1(JLON,KTDIA-1,KLEV)=EXP(MAX(-ZDEL1,ZARGLI))
   
+#endif
 
 ELSE
 
@@ -2301,36 +2304,6 @@ ELSE
 
 IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV1 = ", KTDIA-1, KLEV
   DO JLEV1=KTDIA-1,KLEV    ! initial half level
-
-#ifdef UNDEF
-
-		! daand: added explicit loops here
-		DO JG=1,3
-			
-				ZC_UW      (JG)=ZEPSU
-				ZC_US      (JG)=ZEPSU
-				ZC_US_IRHOV(JG)=ZEPSU
-				ZC_U       (JG)=ZEPSU
-				ZC_PU      (JG)=ZEPSU
-				ZC_TU      (JG)=ZEPSU
-				ZT_UW      (JG)=ZEPSU
-				ZT_US      (JG)=ZEPSU
-				ZT_US_IRHOV(JG)=ZEPSU
-				ZT_U       (JG)=ZEPSU
-				ZT_PU      (JG)=ZEPSU
-				ZT_TU      (JG)=ZEPSU
-			
-		ENDDO
-		
-			ZC_UC        =ZEPSU
-			ZT_UC        =ZEPSU
-		
-
-    
-      ZTAU0(JLON,JLEV1,JLEV1)=1._JPRB
-      ZTAU1(JLON,JLEV1,JLEV1)=1._JPRB
-    
-#endif
 
 IF (JLON==1) PRINT *, __FILE__, ':', __LINE__, " JLEV2 = ", JLEV1+1,KLEV
     DO JLEV2=JLEV1+1,KLEV  ! final half level
