@@ -1024,6 +1024,8 @@ ENDDO
 ! ascending vertical loop
 ! -----
 
+#ifdef UNDEF
+
 DO JLEV=KLEV,KTDIA,-1
 
   ! compute unscaled absorber amounts 2.du
@@ -1368,6 +1370,8 @@ DO JG=1,3
 
   
 ENDDO
+
+#endif
 
 #ifdef UNDEF
 
