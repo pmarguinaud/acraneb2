@@ -7,7 +7,7 @@
 set -x
 set -e
 
-cd /scratch/work/marguina/acraneb2/single-directive-redim-sp/src
+cd /scratch/work/marguina/acraneb2/single-directive-redim-sp-stack-alloc/src
 
 export NV_ACC_CUDA_HEAPSIZE=64Mb
 
@@ -18,8 +18,6 @@ for arch in gpu_d
 do
 
   ../src/compile.$arch/main.x  --nproma  32 --ngpblk   1 --ncount  1 --save --check  
-
-  exit
 
   nvidia-smi
   if [ "$arch" = "gpu_s" ]
