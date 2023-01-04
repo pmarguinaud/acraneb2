@@ -15,13 +15,17 @@ cd ../data
 
 ../src/compile.gpu_d/main.x  --nproma  32 --ngpblk   1 --ncount  1 --save --check  --alloc 1
 
-for alloc in 1 2 3
+for alloc in 1 2 3 4 5
 do
 
 if [ "x$alloc" = "x3" ]
 then
   unset NV_ACC_CUDA_HEAPSIZE
   heapsize=16000
+elif [ "x$alloc" = "x4" ]
+then
+  unset NV_ACC_CUDA_HEAPSIZE
+  heapsize=24000
 else
   export NV_ACC_CUDA_HEAPSIZE=64Mb
   heapsize=0
