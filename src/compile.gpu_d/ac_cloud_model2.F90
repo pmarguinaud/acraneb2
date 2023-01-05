@@ -191,8 +191,10 @@ alloc (LLQL)
 JLON = KIDIA
 
 
-IF (JLON == 1 .OR. JLON == 32 .OR. JLON == 33 .OR. JLON == 64) THEN
-  PRINT *, " LLQL = ", JLON, " ", LOC (LLQL (JLON, 1))
+IF (JLON == 1) THEN
+  PRINT *, " LLQL = ", JLON, " ", LOC (LLQL (1, 1)), " ", LOC (LLQL (32, KLEV))
+ELSEIF (JLON == 33) THEN
+  PRINT *, " LLQL = ", JLON, " ", LOC (LLQL (33, 1)), " ", LOC (LLQL (64, KLEV))
 ENDIF
 
 
