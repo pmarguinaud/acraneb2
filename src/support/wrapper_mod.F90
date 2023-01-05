@@ -142,6 +142,7 @@ DO JCOUNT=1,KCOUNT
 JBLK1 = 1
 JBLK2 = KGPBLK
 
+
 !$acc parallel loop gang vector_length (KLON)
 DO JBLK=JBLK1,JBLK2
 
@@ -178,6 +179,7 @@ DO JBLK=JBLK1,JBLK2
 
 ENDDO
 !$acc end parallel loop
+
 
     TEC = OMP_GET_WTIME ()
 
